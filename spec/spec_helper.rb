@@ -14,6 +14,10 @@
 #
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 require "capybara/rspec"
+require "rack/files"
+
+# Serve the static HTML pages from the repository root
+Capybara.app = Rack::Files.new(File.expand_path("..", __dir__))
 RSpec.configure do |config|
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
