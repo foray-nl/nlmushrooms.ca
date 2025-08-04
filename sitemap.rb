@@ -1,8 +1,12 @@
 require 'nokogiri'
 require 'set'
 require 'pathname'
+require 'builder'
+require 'uri'
 
 ROOT = Pathname.new(File.expand_path('.', __dir__))
+# Base URL used when generating sitemap.xml entries
+BASE_URL = 'https://nlmushrooms.ca'
 
 visited = Set.new
 assets = Set.new
@@ -35,3 +39,17 @@ File.open('sitemap.txt', 'w') do |f|
   f.puts 'Assets:'
   assets.sort.each { |a| f.puts a }
 end
+
+# Generate an XML sitemap for search engines
+builder = Builder::XmlMarkup.new(indent: 2)
+builder.instruct! :xml, version: '1.0', encoding: 'UTF-8'
+builder.urlset(xmlns: 'http://www.sitemaps.org/schemas/sitemap/0.9') do
+  (visited.to_a + assets.to_a).sort.each do |p|
+    builder.url do
+      encoded = URI::DEFAULT_PARSER.escape(p)
+      builder.loc(URI.join(BASE_URL + '/', encoded).to_s)
+    end
+  end
+end
+
+File.write('sitemap.xml', builder.target!)

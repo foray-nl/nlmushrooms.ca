@@ -9,6 +9,8 @@ sudo apt-get install -y build-essential libssl-dev libreadline-dev zlib1g-dev li
 if [ ! -d "$HOME/.rbenv" ]; then
   git clone https://github.com/rbenv/rbenv.git ~/.rbenv
   cd ~/.rbenv && src/configure && make -C src
+else
+  cd ~/.rbenv && git pull
 fi
 
 export PATH="$HOME/.rbenv/bin:$PATH"
@@ -26,5 +28,6 @@ latest_ruby=$(rbenv install -l | grep -v - | tail -1 | tr -d ' ')
 rbenv install -s "$latest_ruby"
 rbenv global "$latest_ruby"
 
-# Install bundler
-gem install bundler
+# Install bundler and project gems
+gem install bundler --no-document
+bundle install
