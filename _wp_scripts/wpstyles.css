@@ -12,3 +12,35 @@ a:active {color:#0000ff;text-decoration:underline;}
 .Default { text-align:left;margin:0px;text-indent:0.0px;line-height:1px;font-family:"Excelsior LT", serif;font-style:normal;font-weight:normal;color:#000000;background-color:transparent;font-variant:normal;font-size:16.0px;vertical-align:0; }
 .Normal { text-align:left;margin:0px;text-indent:0.0px;line-height:1px;font-family:"Times New Roman", serif;font-style:normal;font-weight:normal;color:#000000;background-color:transparent;font-variant:normal;font-size:16.0px;vertical-align:0; }
 .Normal2 { text-align:left;margin:0px;text-indent:0.0px;line-height:1px;font-family:"Times New Roman", serif;font-style:normal;font-weight:normal;color:#000000;background-color:transparent;font-variant:normal;font-size:16.0px;vertical-align:0; }
+/* Navigation */
+#main-nav {
+  background-color: #ffa64c;
+}
+.nav-list {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+.nav-list li {
+  margin: 0;
+}
+.nav-list a {
+  display: block;
+  padding: 10px 15px;
+  color: #000;
+  text-decoration: none;
+}
+.nav-list a:hover,
+.nav-list a:focus {
+  background-color: #e67400;
+  color: #fff;
+}
+.nav-list a:focus {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+.nav-list a[aria-current="page"] {
+  font-weight: bold;
+  text-decoration: underline;
+}
