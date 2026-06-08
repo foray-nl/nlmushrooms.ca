@@ -3,7 +3,7 @@ require "spec_helper"
 RSpec.describe "Site navigation", type: :feature do
   NAV_LINKS = {
     nav_4_B1: "index.html",
-    nav_4_B2: "foray_2025.html",
+    nav_4_B2: "foray_2026.html",
     nav_4_B3: "foray_reports.html",
     nav_4_B4: "species_list_explanations.html",
     nav_4_B5: "omphalina.html",
