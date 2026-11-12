@@ -12,3 +12,4 @@ gem "selenium-webdriver"
 gem "axe-core-capybara"
 gem "axe-core-rspec"
 gem "puma"
+gem "bundler-audit", require: false
