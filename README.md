@@ -32,6 +32,17 @@ bundle install
 bundle exec rspec
 ```
 
+## Before/after screenshots and accessibility (axe-core)
+`spec/visual/pages_spec.rb` captures every HTML page (desktop 1440 px and mobile 430 px with viewport emulation, full page) and runs axe-core. It needs Chrome (Selenium Manager fetches it) and is opt-in:
+
+```bash
+git worktree add --detach tmp/baseline $(grep commit spec/baseline.yml | cut -d' ' -f2)   # once; add GIT_LFS_SKIP_SMUDGE=1 to skip PDFs
+RUN_VISUAL=1 SITE_ROOT=tmp/baseline CAPTURE_LABEL=before bundle exec rspec spec/visual/pages_spec.rb
+RUN_VISUAL=1 bundle exec rspec spec/visual/pages_spec.rb      # after, from the working tree
+ruby scripts/compare_visual.rb   # tmp/visual/compare/index.html and tmp/visual/axe-summary.md
+```
+Output lives in `tmp/` (gitignored). Google Analytics and web fonts are blocked during capture so runs are repeatable.
+
 ## Contributing
 1. Fork the repository and create a feature branch.
 2. Make your changes and update `sitemap.xml` using `ruby sitemap.rb`.
