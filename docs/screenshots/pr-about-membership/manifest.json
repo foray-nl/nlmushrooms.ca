@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "about_us",
+    "membership",
+    "contacts",
+    "resources"
+  ],
+  "before_base": "docs/screenshots/baseline-0a1f1fa",
+  "after_base": "docs/screenshots/pr-about-membership/after"
+}

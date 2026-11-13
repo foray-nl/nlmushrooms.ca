@@ -189,3 +189,20 @@ footer {
   .home .book { grid-area: book; }
   .home .photo { grid-area: photo; }
 }
+
+/* Single-column text pages (about, membership, contacts, resources) */
+main.page { display: block; max-width: 860px; }
+main.page .content { min-width: 0; }
+main.page address { font-style: normal; margin: 0 0 1em; }
+main.page a { color: #b8480f; }
+.history { margin-top: 2rem; }
+.history h2 { font-size: 1.4em; }
+.history h3 { margin: 1.4em 0 0.3em; font-size: 1.1em; }
+.history p { margin: 0 0 0.9em; }
+.history .signature { margin-top: 1.5em; font-style: italic; }
+@media (min-width: 900px) {
+  .history { column-count: 2; column-gap: 2.5rem; }
+  .history h2 { column-span: all; }
+  .history h3 { break-after: avoid; }
+}
+.history .source { margin-top: 1.5em; font-size: 0.9em; column-span: all; }
