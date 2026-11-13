@@ -13,10 +13,7 @@
 # spec/missing_files_spec.rb fails when a page references a missing path that is not listed here, when a
 # "missing" entry is no longer missing, or when an "uploaded" entry is absent.
 
-# Pages that are not part of the site and are only checked for the cleanup of their own references.
-ignore_sources:
-  - path: omphaline/page40.html
-    reason: Orphan copy of page40.html with a wrong relative base (about 50 dead references). Slated for deletion in the link walk.
+ignore_sources: []
 
 files:
   - path: Omphalina_XIV_No2.pdf
