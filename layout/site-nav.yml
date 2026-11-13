@@ -7,9 +7,15 @@
 # Pages with `subnav: true` show their children (pages whose parent they are, in this order) as the horizontal sub-nav.
 # <title> is "<title or name> | <each parent's title or name, nearest first, home excluded> | <site name>",
 # e.g. "Contact Us | About Us | Foray Newfoundland and Labrador". The home page's title is the site name alone.
+#
+# Share image (Open Graph / Twitter): `image` is a 1200x630 file under images/share/ (scripts/share_images.py builds them),
+# `image_alt` describes it. The site-level image is the default; a page may set its own `image` and `image_alt`.
 site:
   name: Foray Newfoundland and Labrador
   url: https://nlmushrooms.ca
+  locale: en_CA
+  image: images/share/default.jpg
+  image_alt: "Foray Newfoundland and Labrador logo: a chanterelle mushroom beside the words Foray Newfoundland and Labrador"
 pages:
   - file: index.html
     name: Home
@@ -17,14 +23,20 @@ pages:
   - file: foray_2026.html
     name: Foray 2026
     parent: index.html
+    image: images/share/foray-2026.jpg
+    image_alt: "Foray 2026 poster: Foray NL, Bonavista Peninsula, October 2-4, with hikers on a coastal headland"
     description: "Foray 2026: the annual Newfoundland mushroom and lichen foray at Camp Starrigan near Musgravetown on the Bonavista Peninsula, October 2-4, 2026."
   - file: foray_2025.html
     name: Foray 2025
     parent: index.html
+    image: images/share/foray-2025.jpg
+    image_alt: "Foray 2025 poster for the Pinchgut Lake foray near Corner Brook"
     description: "Foray 2025: the annual Newfoundland mushroom and lichen foray at Pinchgut Lake south of Corner Brook, September 26-28, 2025."
   - file: foray_2024.html
     name: Foray 2024
     parent: index.html
+    image: images/share/foray-2024.jpg
+    image_alt: "Foray 2024 poster for the Salmonier Nature Park foray"
     description: "Foray 2024: the annual Newfoundland mushroom and lichen foray at Salmonier Nature Park on the Avalon Peninsula, October 4-6, 2024."
   - file: foray_2023.html
     name: Foray 2023

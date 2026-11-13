@@ -10,7 +10,7 @@
 #   <!-- /layout:nav -->
 #
 # Regions: head (shared <link>s), header, nav, footer, plus generated regions built from the page registry
-# layout/site-nav.yml: meta (<title>, description, canonical, BreadcrumbList JSON-LD), breadcrumb and section-nav; and the social region (layout/socials.yml; the header partial gets the same
+# layout/site-nav.yml: meta (<title>, description, canonical, Open Graph and Twitter tags, BreadcrumbList JSON-LD), breadcrumb and section-nav; and the social region (layout/socials.yml; the header partial gets the same
 # accounts through its {{social-links}} token). Everything outside the markers is left alone.
 # In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
@@ -29,6 +29,7 @@ module ApplyLayout
   GENERATED = %w[meta breadcrumb section-nav social].freeze
   SOCIALS = File.join(ROOT, 'layout', 'socials.yml')
   HIERARCHY = File.join(ROOT, 'layout', 'site-nav.yml')
+  SHARE_SIZE = [1200, 630].freeze
 
   module_function
 
@@ -101,8 +102,24 @@ module ApplyLayout
     out = +"<title>#{CGI.escapeHTML(page_title(basename))}</title>\n"
     out << %(<meta name="description" content="#{CGI.escapeHTML(page['description'])}">\n)
     out << %(<link rel="canonical" href="#{canonical_url(basename)}">\n)
+    out << social_meta(page, basename)
     out << breadcrumb_jsonld(basename)
     out
+  end
+
+  # Open Graph and Twitter card tags. Twitter falls back to the og:* values, so only the card type is needed.
+  def social_meta(page, basename)
+    image = page['image'] || site['image']
+    alt = page['image_alt'] || site['image_alt']
+    tags = [
+      ['property', 'og:type', 'website'], ['property', 'og:site_name', site['name']],
+      ['property', 'og:locale', site['locale']], ['property', 'og:title', page_title(basename)],
+      ['property', 'og:description', page['description']], ['property', 'og:url', canonical_url(basename)],
+      ['property', 'og:image', "#{site['url']}/#{image}"], ['property', 'og:image:width', SHARE_SIZE[0].to_s],
+      ['property', 'og:image:height', SHARE_SIZE[1].to_s], ['property', 'og:image:alt', alt],
+      ['name', 'twitter:card', 'summary_large_image']
+    ]
+    tags.map { |attr, key, value| %(<meta #{attr}="#{key}" content="#{CGI.escapeHTML(value)}">\n) }.join
   end
 
   def breadcrumb_jsonld(basename)
