@@ -342,12 +342,13 @@ module ApplyLayout
   # Header variant: icon-only links with a Bootstrap tooltip ("Platform: handle") and a full accessible name.
   # List variant (Contacts page): icon plus visible platform and handle, so no tooltip is needed.
   def social_links(variant)
-    if variant == :header
+    if %i[header nav].include?(variant)
+      css = variant == :nav ? 'social-links nav-social' : 'social-links'
       items = socials.map do |a|
         label = "#{a['platform']}: #{CGI.escapeHTML(a['handle'])}"
         %(    <li><a class="social-link" href="#{a['url']}" target="_blank" rel="noopener noreferrer" data-bs-toggle="tooltip" data-bs-placement="bottom" title="#{label}" aria-label="#{label} (opens in a new tab)"><i class="fa-brands #{a['icon']}" aria-hidden="true"></i></a></li>\n)
       end
-      %(<nav class="social-links" aria-label="Foray NL on social media">\n  <ul>\n#{items.join}  </ul>\n</nav>\n)
+      %(<nav class="#{css}" aria-label="Foray NL on social media">\n  <ul>\n#{items.join}  </ul>\n</nav>\n)
     else
       items = socials.map do |a|
         %(  <li><a href="#{a['url']}" target="_blank" rel="noopener noreferrer"><i class="fa-brands #{a['icon']}" aria-hidden="true"></i> <span class="social-platform">#{a['platform']}</span> <span class="social-handle">#{CGI.escapeHTML(a['handle'])}</span><span class="visually-hidden"> (opens in a new tab)</span></a></li>\n)
@@ -448,6 +449,7 @@ module ApplyLayout
         indent = Regexp.last_match(1)
         body = partial(name)
         body = body.gsub('{{social-links}}') { social_links(:header).lines.map { |l| "  #{l}" }.join.lstrip } if name == 'header'
+        body = body.gsub('{{social-links-nav}}') { social_links(:nav).lines.map { |l| "  #{l}" }.join.lstrip } if name == 'nav'
         body = mark_active(body, File.basename(page_path)) if name == 'nav'
         body = version_assets(body) if name == 'head'
         lines = body.lines.map { |l| l.strip.empty? ? l : "#{indent}#{l}" }.join

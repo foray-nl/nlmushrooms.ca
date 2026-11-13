@@ -28,3 +28,11 @@ Capybara.javascript_driver = :selenium_chrome_headless
 Capybara.server = :puma, { Silent: true }
 Capybara.server_host = '127.0.0.1'
 Capybara.always_include_port = true
+
+# Always quit every browser, even after failures, so no chrome/chromedriver outlives the run.
+RSpec.configure do |config|
+  config.after(:suite) do
+    Capybara.send(:session_pool).each_value { |session| session.driver.quit if session.driver.respond_to?(:quit) }
+    Capybara.reset_sessions!
+  end
+end

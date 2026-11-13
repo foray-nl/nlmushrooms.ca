@@ -4,6 +4,7 @@ require 'fileutils'
 require 'json'
 require 'cgi'
 require 'base64'
+require 'rack/files'
 
 # Before/after page captures: desktop and mobile PNGs plus axe-core results per page.
 # Ported from NLO's DocsScreenshots helper (no Rails, no vips). Output goes to tmp/visual/<label>/.
@@ -20,6 +21,10 @@ module PageCapture
 
   def site_root = File.expand_path(ENV.fetch('SITE_ROOT', REPO_ROOT))
   def label = ENV.fetch('CAPTURE_LABEL', 'after')
+
+  # One Rack app per site root. Capybara keys its session pool by app object, so building a new
+  # Rack::Files per example launched a new Chrome per example and never quit them (OOM on bts-0).
+  def app = (@apps ||= {})[site_root] ||= Rack::Files.new(site_root)
   def out_dir = File.join(REPO_ROOT, 'tmp', 'visual', label)
 
   # Every HTML page on disk (sitemap.xml is known to be incomplete), as paths relative to the site root.
