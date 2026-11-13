@@ -9,8 +9,8 @@
 #   ...anything, replaced on every run...
 #   <!-- /layout:nav -->
 #
-# Regions: head (shared <link>s), header, nav, footer, plus the generated breadcrumb and section-nav regions (built from
-# layout/site-nav.yml for pages listed there) and the social region (layout/socials.yml; the header partial gets the same
+# Regions: head (shared <link>s), header, nav, footer, plus generated regions built from the page registry
+# layout/site-nav.yml: meta (<title>, description, canonical, BreadcrumbList JSON-LD), breadcrumb and section-nav; and the social region (layout/socials.yml; the header partial gets the same
 # accounts through its {{social-links}} token). Everything outside the markers is left alone.
 # In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
@@ -20,12 +20,13 @@
 require 'yaml'
 require 'cgi'
 require 'digest'
+require 'json'
 
 module ApplyLayout
   ROOT = File.expand_path('..', __dir__)
   PARTIALS = File.join(ROOT, 'layout', 'partials')
   REGIONS = %w[head header nav footer].freeze
-  GENERATED = %w[breadcrumb section-nav social].freeze
+  GENERATED = %w[meta breadcrumb section-nav social].freeze
   SOCIALS = File.join(ROOT, 'layout', 'socials.yml')
   HIERARCHY = File.join(ROOT, 'layout', 'site-nav.yml')
 
@@ -53,11 +54,68 @@ module ApplyLayout
     @hierarchy ||= YAML.safe_load_file(HIERARCHY)
   end
 
-  # The section a page belongs to (as overview or child), or nil.
-  def section_for(basename)
-    hierarchy['sections'].find do |sec|
-      sec['page'] == basename || sec['children'].any? { |c| c['page'] == basename }
+  def site = hierarchy['site']
+  def registry = hierarchy['pages']
+  def entry(basename) = registry.find { |p| p['file'] == basename }
+  def children(file) = registry.select { |p| p['parent'] == file }
+  def segment(page) = page['title'] || page['name']
+
+  # [home, ..., page] for a registered page, [] for any other file.
+  def trail(basename)
+    page = entry(basename)
+    chain = []
+    while page
+      chain.unshift(page)
+      page = entry(page['parent'].to_s)
     end
+    chain
+  end
+
+  # The page whose children form the sub-nav this page shows (itself or its parent), or nil.
+  def section_for(basename)
+    page = entry(basename)
+    return nil unless page
+    return page if page['subnav']
+
+    parent = entry(page['parent'].to_s)
+    parent if parent && parent['subnav']
+  end
+
+  # "Contact Us | About Us | Foray Newfoundland and Labrador"; the home page is the site name alone.
+  def page_title(basename)
+    chain = trail(basename)
+    return site['name'] if chain.size <= 1
+
+    (chain.drop(1).reverse.map { |p| segment(p) } + [site['name']]).join(' | ')
+  end
+
+  def canonical_url(basename)
+    basename == registry.first['file'] ? "#{site['url']}/" : "#{site['url']}/#{basename}"
+  end
+
+  # <title>, description, canonical link and BreadcrumbList JSON-LD for a registered page ('' for any other file).
+  def meta(basename)
+    page = entry(basename)
+    return '' unless page
+
+    out = +"<title>#{CGI.escapeHTML(page_title(basename))}</title>\n"
+    out << %(<meta name="description" content="#{CGI.escapeHTML(page['description'])}">\n)
+    out << %(<link rel="canonical" href="#{canonical_url(basename)}">\n)
+    out << breadcrumb_jsonld(basename)
+    out
+  end
+
+  def breadcrumb_jsonld(basename)
+    chain = trail(basename)
+    return '' if chain.size <= 1
+
+    data = {
+      '@context' => 'https://schema.org', '@type' => 'BreadcrumbList',
+      'itemListElement' => chain.each_with_index.map do |p, i|
+        { '@type' => 'ListItem', 'position' => i + 1, 'name' => p['name'], 'item' => canonical_url(p['file']) }
+      end
+    }
+    %(<script type="application/ld+json">\n#{JSON.pretty_generate(data).gsub('</', '<\\/')}\n</script>\n)
   end
 
   def socials
@@ -82,17 +140,14 @@ module ApplyLayout
   end
 
   def breadcrumb(basename)
-    sec = section_for(basename)
-    return '' unless sec
+    chain = trail(basename)
+    return '' if chain.size <= 1
 
-    crumbs = [[hierarchy['home_title'] || 'Home', hierarchy['home']], [sec['title'], sec['page']]]
-    child = sec['children'].find { |c| c['page'] == basename }
-    crumbs << [child['title'], child['page']] if child
-    items = crumbs.each_with_index.map do |(title, href), i|
-      if i == crumbs.size - 1
-        %(    <li class="breadcrumb-item active" aria-current="page">#{CGI.escapeHTML(title)}</li>\n)
+    items = chain.each_with_index.map do |page, i|
+      if i == chain.size - 1
+        %(    <li class="breadcrumb-item active" aria-current="page">#{CGI.escapeHTML(page['name'])}</li>\n)
       else
-        %(    <li class="breadcrumb-item"><a href="#{href}">#{CGI.escapeHTML(title)}</a></li>\n)
+        %(    <li class="breadcrumb-item"><a href="#{page['file']}">#{CGI.escapeHTML(page['name'])}</a></li>\n)
       end
     end
     %(<nav class="page-breadcrumb" aria-label="breadcrumb">\n  <ol class="breadcrumb">\n#{items.join}  </ol>\n</nav>\n)
@@ -103,16 +158,16 @@ module ApplyLayout
     sec = section_for(basename)
     return '' unless sec
 
-    title_cls = sec['page'] == basename ? 'subnav-title active' : 'subnav-title'
-    title_cur = sec['page'] == basename ? ' aria-current="page"' : ''
-    items = sec['children'].map do |c|
-      active = c['page'] == basename
+    title_cls = sec['file'] == basename ? 'subnav-title active' : 'subnav-title'
+    title_cur = sec['file'] == basename ? ' aria-current="page"' : ''
+    items = children(sec['file']).map do |c|
+      active = c['file'] == basename
       cls = active ? 'nav-link active' : 'nav-link'
       cur = active ? ' aria-current="page"' : ''
-      %(    <li class="nav-item"><a class="#{cls}"#{cur} href="#{c['page']}">#{CGI.escapeHTML(c['title'])}</a></li>\n)
+      %(    <li class="nav-item"><a class="#{cls}"#{cur} href="#{c['file']}">#{CGI.escapeHTML(c['name'])}</a></li>\n)
     end
-    label = CGI.escapeHTML(sec['title'])
-    %(<nav class="subnav" aria-label="#{label} section">\n  <a class="#{title_cls}"#{title_cur} href="#{sec['page']}">#{label}</a>\n  <ul class="nav">\n#{items.join}  </ul>\n</nav>\n)
+    label = CGI.escapeHTML(sec['name'])
+    %(<nav class="subnav" aria-label="#{label} section">\n  <a class="#{title_cls}"#{title_cur} href="#{sec['file']}">#{label}</a>\n  <ul class="nav">\n#{items.join}  </ul>\n</nav>\n)
   end
 
   def render(source, page_path)
@@ -135,7 +190,7 @@ module ApplyLayout
     GENERATED.reduce(source) do |text, name|
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)
-        body = { 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list) }.fetch(name)
+        body = { 'meta' => meta(basename), 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list) }.fetch(name)
         lines = body.lines.map { |l| "#{indent}#{l}" }.join
         "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
       end

@@ -141,4 +141,66 @@ RSpec.describe ApplyLayout do
       described_class.socials.each { |a| expect(css).to include(".#{a['icon']}::before") }
     end
   end
+
+  describe 'page registry (layout/site-nav.yml)' do
+    let(:converted) do
+      described_class.pages.select { |f| File.read(f, encoding: 'UTF-8').include?('<!-- layout:head -->') }.map { |f| File.basename(f) }
+    end
+    let(:registered) { described_class.registry.map { |p| p['file'] } }
+
+    it 'lists every converted page and no file that does not exist' do
+      expect(converted - registered).to be_empty
+      expect(registered.reject { |f| File.exist?(File.join(described_class::ROOT, f)) }).to be_empty
+    end
+
+    it 'gives every page except the home page a registered parent, with no cycles and no duplicates' do
+      expect(registered.uniq).to eq(registered)
+      described_class.registry.drop(1).each do |p|
+        expect(registered).to include(p['parent']), "#{p['file']} has no registered parent"
+        expect(described_class.trail(p['file']).first['file']).to eq(registered.first)
+      end
+    end
+
+    it 'has a unique description of 70 to 160 characters for every page' do
+      descriptions = described_class.registry.map { |p| p['description'].to_s }
+      expect(descriptions.uniq.size).to eq(descriptions.size)
+      descriptions.each { |d| expect(d.length).to be_between(70, 160).inclusive }
+    end
+
+    it 'puts the generated meta region and a breadcrumb region on every converted page' do
+      converted.each do |f|
+        src = File.read(File.join(described_class::ROOT, f), encoding: 'UTF-8')
+        expect(src).to include('<!-- layout:meta -->'), "#{f} lacks the meta region"
+        expect(src).to include('<!-- layout:breadcrumb -->') unless f == registered.first
+        expect(src).not_to match(%r{<title>(?!.*Foray Newfoundland and Labrador</title>)}), "#{f} has a hand-written title"
+      end
+    end
+
+    it 'builds titles that nest the parents under the site name' do
+      expect(described_class.page_title('index.html')).to eq('Foray Newfoundland and Labrador')
+      expect(described_class.page_title('foray_2026.html')).to eq('Foray 2026 | Foray Newfoundland and Labrador')
+      expect(described_class.page_title('contacts.html')).to eq('Contact Us | About Us | Foray Newfoundland and Labrador')
+      expect(described_class.page_title('board.html')).to eq('Board of Directors | About Us | Foray Newfoundland and Labrador')
+    end
+
+    it 'emits a canonical apex URL and a BreadcrumbList that matches the visible crumbs' do
+      described_class.registry.drop(1).each do |p|
+        out = described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n<!-- layout:breadcrumb -->\n<!-- /layout:breadcrumb -->\n", p['file'])
+        expect(out).to include(%(<link rel="canonical" href="https://nlmushrooms.ca/#{p['file']}">))
+        json = JSON.parse(out[%r{<script type="application/ld\+json">\n(.*?)\n</script>}m, 1])
+        names = json['itemListElement'].map { |i| i['name'] }
+        visible = out.scan(%r{<li class="breadcrumb-item[^"]*"[^>]*>(?:<a [^>]*>)?([^<]+)}).flatten.map { |n| CGI.unescapeHTML(n) }
+        expect(json['@type']).to eq('BreadcrumbList')
+        expect(names).to eq(visible)
+        expect(json['itemListElement'].map { |i| i['position'] }).to eq((1..names.size).to_a)
+        expect(json['itemListElement'].map { |i| i['item'] }).to all(start_with('https://nlmushrooms.ca/'))
+      end
+    end
+
+    it 'has no breadcrumb and no BreadcrumbList on the home page, and a bare canonical' do
+      out = described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", 'index.html')
+      expect(out).not_to include('BreadcrumbList')
+      expect(out).to include('href="https://nlmushrooms.ca/"')
+    end
+  end
 end
