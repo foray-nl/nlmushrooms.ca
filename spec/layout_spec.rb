@@ -142,9 +142,21 @@ RSpec.describe ApplyLayout do
     end
   end
 
+  describe '404 page' do
+    let(:src) { File.read(File.join(described_class::ROOT, '404.html'), encoding: 'UTF-8') }
+
+    it 'uses the shared head, header, nav and footer and resolves links from the site root' do
+      %w[head header nav footer].each { |r| expect(src).to include("<!-- layout:#{r} -->") }
+      expect(src).to include('<base href="/">')
+      expect(src).to include('<meta name="robots" content="noindex">')
+      expect(src).not_to include('<!-- layout:meta -->')
+    end
+  end
+
   describe 'page registry (layout/site-nav.yml)' do
+    # 404.html shares the static regions but is not a registered page: no canonical, breadcrumb or sitemap entry.
     let(:converted) do
-      described_class.pages.select { |f| File.read(f, encoding: 'UTF-8').include?('<!-- layout:head -->') }.map { |f| File.basename(f) }
+      described_class.pages.select { |f| File.read(f, encoding: 'UTF-8').include?('<!-- layout:head -->') }.map { |f| File.basename(f) } - ['404.html']
     end
     let(:registered) { described_class.registry.map { |p| p['file'] } }
 

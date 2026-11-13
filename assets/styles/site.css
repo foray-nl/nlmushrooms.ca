@@ -342,3 +342,14 @@ body > .page-breadcrumb + main { margin-top: 0.5rem; }
 .flickr-samples img, .flickr-tiles img, .flickr-genera { max-width: 100%; height: auto; }
 .flickr-tiles { list-style: none; margin: 0 0 1.5rem; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem; }
 @media (min-width: 900px) { .flickr-index { grid-template-columns: 1fr auto 1fr; } .flickr-samples { flex-direction: column; flex-wrap: nowrap; } }
+/* 404 page */
+main.not-found { display: block; text-align: center; padding: 2rem 1rem 3rem; }
+.not-found-code { margin: 0; font-size: clamp(4rem, 16vw, 8rem); font-weight: 800; line-height: 1; color: #243542; display: flex; align-items: center; justify-content: center; gap: 0.05em; }
+.not-found-code img { width: 0.9em; height: 0.9em; transform: rotate(-8deg); }
+main.not-found h1 { margin: 0.25rem 0 0.75rem; font-size: clamp(1.6rem, 5vw, 2.4rem); color: #b8480f; }
+.not-found-eyebrow { margin: 0.5rem 0 0; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #243542; }
+.not-found-line[hidden] { display: none; }
+.not-found-lead { max-width: 34rem; margin: 0 auto 1.5rem; font-size: 1.1em; }
+.not-found-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; }
+main.not-found a.not-found-btn { display: inline-block; padding: 0.6em 1.4em; border-radius: 10px; background: #b8480f; color: #fff; font-weight: 600; text-decoration: none; }
+main.not-found a.not-found-btn:hover, main.not-found a.not-found-btn:focus-visible { background: #243542; color: #fff; }

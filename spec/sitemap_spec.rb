@@ -24,10 +24,10 @@ RSpec.describe 'Sitemap and robots.txt' do
     end
   end
 
-  it 'points robots.txt at the sitemap and blocks nothing' do
+  it 'points robots.txt at the sitemap and blocks only the archive' do
     robots = File.read('robots.txt')
     expect(robots).to include('Sitemap: https://nlmushrooms.ca/sitemap.xml')
-    expect(robots).not_to match(/^Disallow:\s*\S/)
+    expect(robots.scan(/^Disallow:\s*(\S+)/).flatten).to eq(['/archive/'])
   end
 
   it 'keeps the 404 page out of search results' do

@@ -2,6 +2,13 @@
 # The files are still uploaded with each deploy; a forced 404 only hides their URLs. Dotfiles and .github/ are
 # already not served. Add new tooling paths here (and keep website content out of these directories).
 
+# Archived files are kept in the repository but never served: any request under /archive/ gets the 404 page.
+[[redirects]]
+  from = "/archive/*"
+  to = "/404.html"
+  status = 404
+  force = true
+
 [[redirects]]
   from = "/page40.html"
   to = "/omphalina_2021.html"
@@ -268,11 +275,6 @@
 
 [[headers]]
   for = "/assets/styles/main.css"
-  [headers.values]
-    Cache-Control = "no-cache"
-
-[[headers]]
-  for = "/_wp_scripts/*"
   [headers.values]
     Cache-Control = "no-cache"
 
