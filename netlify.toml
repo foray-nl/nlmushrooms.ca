@@ -3,6 +3,16 @@
 # already not served. Add new tooling paths here (and keep website content out of these directories).
 
 [[redirects]]
+  from = "/foray_reports.html"
+  to = "/past_forays.html"
+  status = 301
+
+[[redirects]]
+  from = "/foray_reports"
+  to = "/past_forays.html"
+  status = 301
+
+[[redirects]]
   from = "/Gemfile"
   to = "/404.html"
   status = 404

@@ -11,7 +11,7 @@
 #
 # Regions: head (shared <link>s), header, nav, footer, plus generated regions built from the page registry
 # layout/site-nav.yml: meta (<title>, description, canonical, Open Graph and Twitter tags, JSON-LD graph), breadcrumb and section-nav; and the social region (layout/socials.yml; the header partial gets the same
-# accounts through its {{social-links}} token). Everything outside the markers is left alone.
+# accounts through its {{social-links}} token); and the forays and reports regions (layout/forays.yml: the Past Forays directory and the report list). Forays with their own page also get Event JSON-LD. Everything outside the markers is left alone.
 # In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
 #   ruby scripts/apply_layout.rb            rewrite every page that has markers
@@ -21,12 +21,14 @@ require 'yaml'
 require 'cgi'
 require 'digest'
 require 'json'
+require 'date'
 
 module ApplyLayout
   ROOT = File.expand_path('..', __dir__)
   PARTIALS = File.join(ROOT, 'layout', 'partials')
   REGIONS = %w[head header nav footer].freeze
-  GENERATED = %w[meta breadcrumb section-nav social].freeze
+  GENERATED = %w[meta breadcrumb section-nav social forays reports].freeze
+  FORAYS = File.join(ROOT, 'layout', 'forays.yml')
   SOCIALS = File.join(ROOT, 'layout', 'socials.yml')
   HIERARCHY = File.join(ROOT, 'layout', 'site-nav.yml')
   SHARE_SIZE = [1200, 630].freeze
@@ -128,6 +130,8 @@ module ApplyLayout
     graph = [organization, website, webpage(basename)]
     crumbs = breadcrumb_list(basename)
     graph << crumbs if crumbs
+    ev = event(basename)
+    graph << ev if ev
     data = { '@context' => 'https://schema.org', '@graph' => graph }
     %(<script type="application/ld+json">\n#{JSON.pretty_generate(data).gsub('</', '<\\/')}\n</script>\n)
   end
@@ -174,6 +178,116 @@ module ApplyLayout
       end }
   end
 
+  def forays
+    @forays ||= YAML.safe_load_file(FORAYS, permitted_classes: [Date]).sort_by { |f| -f['year'] }
+  end
+
+  def foray_for(basename) = forays.find { |f| f['page'] == basename }
+  def long_date(date) = date.strftime('%B %-d, %Y')
+
+  # "October 2-4, 2026", "September 29 to October 1, 2023", "From September 10, 2010" or nil when no date is known.
+  def date_text(foray)
+    from = foray['start']
+    to = foray['end']
+    return nil unless from
+    return "From #{long_date(from)}" unless to
+    return long_date(from) if from == to
+    return "#{from.strftime('%B %-d')}-#{to.strftime('%-d, %Y')}" if from.month == to.month
+
+    "#{from.strftime('%B %-d')} to #{to.strftime('%B %-d, %Y')}"
+  end
+
+  def date_attr(foray)
+    return nil unless foray['start']
+
+    foray['end'] && foray['end'] != foray['start'] ? "#{foray['start']}/#{foray['end']}" : foray['start'].to_s
+  end
+
+  def report_online?(foray) = foray['report'] && File.exist?(File.join(ROOT, foray['report']))
+
+  def report_label(foray)
+    foray['report'].start_with?('omphaline/') ? 'Report (PDF, in an Omphalina issue)' : 'Report (PDF)'
+  end
+
+  DEFAULT_CARD = { 'file' => 'default', 'alt' => 'Foray Newfoundland and Labrador logo: a chanterelle mushroom beside the words Foray Newfoundland and Labrador' }.freeze
+  STATUS_TEXT = { 'cancelled' => 'In-person foray cancelled', 'not_held' => 'Not held' }.freeze
+
+  # [file stem, alt] of a foray's card image; the default banner card when it has no art.
+  def card_image(foray)
+    year = foray['report_image_year'] || foray['year']
+    source = forays.find { |f| f['year'] == year }
+    return [DEFAULT_CARD['file'], DEFAULT_CARD['alt']] unless source['art'] && File.exist?(File.join(ROOT, 'images', 'forays', "#{year}.jpg"))
+
+    [year.to_s, source['art_alt'].to_s]
+  end
+
+  def pdf_href(path) = CGI.escapeHTML(path).gsub(' ', '%20')
+
+  # Past Forays directory: one card per foray, newest first, with poster or report cover, dates, place and links.
+  def foray_directory
+    cards = forays.map do |f|
+      img, alt = card_image(f.merge('report_image_year' => nil))
+      out = +%(  <li class="foray-card" id="foray-#{f['year']}">\n)
+      out << %(    <img src="images/forays/#{img}.jpg" alt="#{CGI.escapeHTML(alt)}" width="420" height="544" decoding="async">\n)
+      out << %(    <div class="foray-card-body">\n)
+      title = CGI.escapeHTML(f['name'])
+      title = %(<a href="#{f['page']}">#{title}</a>) if f['page']
+      out << %(      <h3>#{title}</h3>\n)
+      out << %(      <p class="foray-status">#{STATUS_TEXT[f['status']]}</p>\n) if STATUS_TEXT[f['status']]
+      place = [f['venue'], f['area']].compact.join(', ')
+      out << %(      <p class="foray-place">#{CGI.escapeHTML(place)}</p>\n) unless place.empty?
+      dates = date_text(f)
+      out << %(      <p class="foray-dates"><time datetime="#{date_attr(f)}">#{dates}</time></p>\n) if dates
+      out << %(      <p>#{CGI.escapeHTML(f['blurb'])}</p>\n) if f['blurb']
+      if f['report'] && report_online?(f)
+        out << %(      <p class="foray-links"><a href="#{pdf_href(f['report'])}">#{report_label(f)}</a></p>\n)
+      elsif f['report']
+        out << %(      <p class="foray-links">Report not currently online</p>\n)
+      end
+      out << %(    </div>\n  </li>\n)
+    end
+    %(<ul class="foray-directory">\n#{cards.join}</ul>\n)
+  end
+
+  # Every foray report available for download, newest first, as media cards: text left, report cover right.
+  def report_list
+    rows = forays.select { |f| f['report'] }.map do |f|
+      img, alt = card_image(f)
+      place = [f['venue'], f['area']].compact.join(', ')
+      link = if report_online?(f)
+               %(<a class="stretched-link" href="#{pdf_href(f['report'])}">#{report_label(f)}</a>)
+             else
+               'Not currently online'
+             end
+      out = +%(  <li class="media-card">\n    <div class="media-card-body">\n)
+      out << %(      <h3>#{f['year']}</h3>\n)
+      out << %(      <p>#{CGI.escapeHTML(place)}</p>\n) unless place.empty?
+      out << %(      <p class="media-card-link">#{link}</p>\n    </div>\n)
+      out << %(    <img class="media-card-img" src="images/forays/#{img}.jpg" alt="#{CGI.escapeHTML(alt)}" width="420" height="544" decoding="async">\n  </li>\n)
+    end
+    %(<ul class="report-list">\n#{rows.join}</ul>\n)
+  end
+
+  # schema.org Event for a foray that has its own page.
+  def event(basename)
+    f = foray_for(basename)
+    return nil unless f && f['start'] && f['end']
+
+    url = canonical_url(basename)
+    page = entry(basename)
+    node = {
+      '@type' => 'Event', '@id' => "#{url}#event", 'name' => "#{f['name']}: #{site['name']}",
+      'startDate' => f['start'].to_s, 'endDate' => f['end'].to_s,
+      'eventStatus' => "https://schema.org/#{f['status'] == 'cancelled' ? 'EventCancelled' : 'EventScheduled'}",
+      'eventAttendanceMode' => 'https://schema.org/OfflineEventAttendanceMode',
+      'description' => page['description'], 'image' => "#{site['url']}/#{page['image'] || site['image']}",
+      'organizer' => { '@id' => org_id }, 'url' => url
+    }
+    node['location'] = { '@type' => 'Place', 'name' => f['venue'] || f['area'],
+                         'address' => { '@type' => 'PostalAddress', 'addressRegion' => 'NL', 'addressCountry' => 'CA' } }
+    node
+  end
+
   def socials
     @socials ||= YAML.safe_load_file(SOCIALS)
   end
@@ -216,7 +330,7 @@ module ApplyLayout
 
     title_cls = sec['file'] == basename ? 'subnav-title active' : 'subnav-title'
     title_cur = sec['file'] == basename ? ' aria-current="page"' : ''
-    items = children(sec['file']).map do |c|
+    items = children(sec['file']).reject { |c| c['subnav_hidden'] }.map do |c|
       active = c['file'] == basename
       cls = active ? 'nav-link active' : 'nav-link'
       cur = active ? ' aria-current="page"' : ''
@@ -246,7 +360,7 @@ module ApplyLayout
     GENERATED.reduce(source) do |text, name|
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)
-        body = { 'meta' => meta(basename), 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list) }.fetch(name)
+        body = { 'meta' => meta(basename), 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list), 'forays' => foray_directory, 'reports' => report_list }.fetch(name)
         lines = body.lines.map { |l| "#{indent}#{l}" }.join
         "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
       end

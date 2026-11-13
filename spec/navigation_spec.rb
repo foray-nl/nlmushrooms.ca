@@ -4,7 +4,7 @@ RSpec.describe "Site navigation", type: :feature do
   NAV_LINKS = %w[
     index.html
     foray_2026.html
-    foray_reports.html
+    past_forays.html
     species_list_explanations.html
     omphalina.html
     science.html

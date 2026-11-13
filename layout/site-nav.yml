@@ -8,6 +8,8 @@
 # <title> is "<title or name> | <each parent's title or name, nearest first, home excluded> | <site name>",
 # e.g. "Contact Us | About Us | Foray Newfoundland and Labrador". The home page's title is the site name alone.
 #
+# `subnav_hidden: true` keeps a child out of its parent's sub-nav (the breadcrumb and title still nest under the parent).
+#
 # `schema_type` (optional) sets the page's schema.org type: AboutPage, ContactPage, CollectionPage; default WebPage.
 # Share image (Open Graph / Twitter): `image` is a 1200x630 file under images/share/ (scripts/share_images.py builds them),
 # `image_alt` describes it. The site-level image is the default; a page may set its own `image` and `image_alt`.
@@ -36,21 +38,34 @@ pages:
     image: images/share/foray-2026.jpg
     image_alt: "Foray 2026 poster: Foray NL, Bonavista Peninsula, October 2-4, with hikers on a coastal headland"
     description: "Foray 2026: the annual Newfoundland mushroom and lichen foray at Camp Starrigan near Musgravetown on the Bonavista Peninsula, October 2-4, 2026."
+  - file: past_forays.html
+    name: Past Forays
+    parent: index.html
+    subnav: true
+    schema_type: CollectionPage
+    description: Every Foray Newfoundland and Labrador foray since 2003 with dates, places and posters, and links to each year's page and report.
+  - file: foray_reports_all.html
+    name: Foray Reports
+    parent: past_forays.html
+    description: Download every Foray Newfoundland and Labrador annual foray report, 2003 to the present, with species lists by trail and commentary.
   - file: foray_2025.html
     name: Foray 2025
-    parent: index.html
+    parent: past_forays.html
+    subnav_hidden: true
     image: images/share/foray-2025.jpg
     image_alt: "Foray 2025 poster for the Pinchgut Lake foray near Corner Brook"
     description: "Foray 2025: the annual Newfoundland mushroom and lichen foray at Pinchgut Lake south of Corner Brook, September 26-28, 2025."
   - file: foray_2024.html
     name: Foray 2024
-    parent: index.html
+    parent: past_forays.html
+    subnav_hidden: true
     image: images/share/foray-2024.jpg
     image_alt: "Foray 2024 poster for the Salmonier Nature Park foray"
     description: "Foray 2024: the annual Newfoundland mushroom and lichen foray at Salmonier Nature Park on the Avalon Peninsula, October 4-6, 2024."
   - file: foray_2023.html
     name: Foray 2023
-    parent: index.html
+    parent: past_forays.html
+    subnav_hidden: true
     description: "Foray 2023: the annual Newfoundland mushroom and lichen foray at Max Simms Lion's Camp, Bishop's Falls, September 29 to October 1, 2023."
   - file: membership.html
     name: Membership

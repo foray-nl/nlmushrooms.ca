@@ -9,7 +9,11 @@ RSpec.describe 'Missing files manifest' do
   let(:manifest) { YAML.safe_load_file(File.join(InternalLinks::ROOT, 'manifests', 'missing-files.yml')) }
   let(:ignored) { manifest.fetch('ignore_sources').map { |e| e.fetch('path') } }
   let(:entries) { manifest.fetch('files').to_h { |e| [e.fetch('path'), e] } }
-  let(:missing) { InternalLinks.missing(ignore_sources: ignored) }
+  # Old URLs that netlify.toml redirects (e.g. /foray_reports.html to /past_forays.html) still resolve for visitors.
+  let(:redirected) do
+    File.read(File.join(InternalLinks::ROOT, 'netlify.toml')).scan(/from = "\/([^"]+)"\n\s*to = "[^"]*"\n\s*status = 301/).flatten
+  end
+  let(:missing) { InternalLinks.missing(ignore_sources: ignored).reject { |path, _| redirected.include?(path) } }
   let(:on_disk) { ->(path) { File.exist?(File.join(InternalLinks::ROOT, path)) } }
 
   it 'lists every referenced path that is not in the repository' do
