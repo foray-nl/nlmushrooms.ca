@@ -82,3 +82,12 @@ Bootstrap would restyle every page), plus the unmodified JS bundle, all self-hos
 `ruby scripts/vendor_bootstrap_nav.rb [VERSION]` regenerates them; site colours and spacing live in
 `assets/styles/site.css`. `RUN_VISUAL=1 bundle exec rspec spec/visual/nav_spec.rb` checks the toggle and that nothing
 scrolls sideways at 430, 992, 1200 and 1440 px.
+
+### Before/after tables in PR bodies
+
+Every PR that changes how a page looks shows the page before and after, desktop and mobile. After capturing
+(see the harness section), `ruby scripts/pr_screenshots.rb stage --name <pr-name> --pages a,b --before <dir>
+--after <dir>` copies the PNGs into `docs/screenshots/<pr-name>/` (never served by Netlify), and
+`ruby scripts/pr_screenshots.rb table --name <pr-name> --sha <commit>` prints the markdown table with URLs pinned
+to that commit, so the images survive branch deletion. A `--before` directory already under `docs/screenshots/`
+(for example the committed baseline) is referenced in place.
