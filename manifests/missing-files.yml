@@ -39,11 +39,3 @@ files:
     possible_locations: [Foray NL board or Omphalina editor, original WebPlus site files]
     status: missing
     notes: Never in the repository. The area has no alt text, so it needs a decision (upload, or remove the hotspot).
-
-  - path: foray_information/Clothing_Supplies_and_Equipment2.pdf
-    kind: file
-    referenced_by: [foray_2023.html, foray_2024.html]
-    description: 2013 clothing, supplies and equipment guide. Only the 10 empty anchors (a link around a line break) still point at it.
-    possible_locations: ["closed PR #9, branch fix/pdf-files (raw blob)"]
-    status: superseded
-    notes: Visible links were repointed to Clothing-Supplies-Equipment-2025.pdf in PR #11. The empty anchors are removed in the foray 2023 to 2026 conversion.
