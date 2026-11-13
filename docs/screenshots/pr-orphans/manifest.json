@@ -1,0 +1,9 @@
+{
+  "pages": [
+    "past_forays",
+    "foray_reports_all",
+    "404"
+  ],
+  "before_base": "docs/screenshots/pr-orphans/before",
+  "after_base": "docs/screenshots/pr-orphans/after"
+}
