@@ -189,3 +189,11 @@ footer {
   .home .book { grid-area: book; }
   .home .photo { grid-area: photo; }
 }
+
+/* Single-column text pages (about, membership, contacts, resources) */
+main.page { display: block; max-width: 860px; }
+main.page .content { min-width: 0; }
+main.page address { font-style: normal; margin: 0 0 1em; }
+main.page a { color: #b8480f; }
+.history { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.5rem; }
+.history img { flex: 1 1 320px; max-width: 100%; height: auto; background: #fde2bd; border: 1px solid #243542; }
