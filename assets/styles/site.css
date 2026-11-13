@@ -332,6 +332,8 @@ body > .page-breadcrumb + main { margin-top: 0.5rem; }
 .submission > div { flex: 1 1 320px; min-width: 0; }
 .submission img { max-width: 100%; height: auto; }
 
+/* Species list pages */
+.media-card-extra { position: relative; z-index: 1; }
 /* Flickr image pages: phylum lists with sample grids, and image tiles */
 .flickr-index { display: grid; gap: 1.5rem; grid-template-columns: 1fr; align-items: start; }
 .flickr-index h2 { font-size: 1.3em; }

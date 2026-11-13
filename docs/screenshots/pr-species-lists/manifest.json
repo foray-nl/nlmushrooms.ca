@@ -1,0 +1,9 @@
+{
+  "pages": [
+    "species_list_explanations",
+    "species_lists",
+    "species_list_by_foray"
+  ],
+  "before_base": "docs/screenshots/baseline-0a1f1fa",
+  "after_base": "docs/screenshots/pr-species-lists/after"
+}
