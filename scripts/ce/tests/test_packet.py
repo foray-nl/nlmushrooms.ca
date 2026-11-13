@@ -22,16 +22,21 @@ def by_key(recs):
     return {r["key"]: r for r in recs}
 
 
+def records(files, name):
+    return files[f"records/{name}.yml"][1]
+
+
 def test_pages_nest_with_refs_and_bodies(built):
-    _s, _u, files, _b, _g = built
-    pages = by_key(files["records/pages.yml"])
-    page = pages["page:past-forays/foray-2025"]
-    assert page["refs"]["parent"] == {"ref": {"type": "page", "key": "page:past-forays"}}
-    assert page["refs"]["share_image"]["ref"]["key"] == "upload:f25"
-    assert page["translations"]["title"]["en"] == "Foray 2025"
+    files = built[2]
+    pages = by_key(records(files, "pages"))
+    page = pages["past-forays/foray-2025"]
+    assert page["refs"]["parent"] == "page:past-forays"
+    assert page["refs"]["share_image"] == "upload:f25"
+    assert page["translations"]["en"]["title"] == "Foray 2025"
     assert page["attributes"]["seo_title"] == "Foray 2025 | Past Forays | Foray Test"
-    assert "<h1>foray_2025</h1>" in pages["block:past-forays/foray-2025:body"]["translations"]["content_html"]["en"]
-    assert "page:home" in pages
+    blocks = by_key(records(files, "content_blocks"))
+    assert "<h1>foray_2025</h1>" in blocks["past-forays/foray-2025.body"]["translations"]["en"]["content_html"]
+    assert "home" in pages and files["records/pages.yml"][0] == "page"
 
 
 def test_seo_title_nests_nearest_first(built):
@@ -49,28 +54,29 @@ def test_gaps_logged_against_deficiency_numbers(built):
 
 def test_events_and_issue_refs(built):
     files = built[2]
-    events = by_key(files["records/events.yml"])
-    assert events["event:foray-2025"]["refs"]["report"]["ref"]["key"] == "upload:foray-report-2025"
-    assert events["event:foray-2021"]["attributes"]["status"] == "cancelled"
-    issue = by_key(files["records/omphalina.yml"])["omphalina:volume-12:issue-3"]
-    assert issue["refs"]["pdf"]["ref"]["key"] == "upload:omphalina-xii-3"
-    assert issue["refs"]["cover"]["ref"]["type"] == "upload"
+    events = by_key(records(files, "events"))
+    assert events["foray-2025"]["refs"]["report"] == "upload:foray-report-2025"
+    assert events["foray-2021"]["attributes"]["status"] == "cancelled"
+    issue = by_key(records(files, "omphalina_issues"))["volume-12/issue-3"]
+    assert issue["refs"]["pdf"] == "upload:omphalina-xii-3" and issue["refs"]["cover"].startswith("upload:")
 
 
 def test_all_refs_resolve_inside_the_packet(built):
     files = built[2]
-    keys = {(r["type"], r["key"]) for recs in files.values() for r in recs}
-    for recs in files.values():
+    keys = {(rtype, r["key"]) for rtype, recs in files.values() for r in recs}
+    for _t, recs in files.values():
         for rec in recs:
             for value in (rec.get("refs") or {}).values():
-                assert (value["ref"]["type"], value["ref"]["key"]) in keys, (rec["key"], value)
+                assert tuple(value.split(":", 1)) in keys, (rec["key"], value)
 
 
-def test_fingerprints_are_stable_and_content_sensitive(built):
-    rec = built[2]["records/uploads.yml"][0]
-    assert packet.fingerprint(rec) == rec["fingerprint"]
-    changed = dict(rec, attributes=dict(rec["attributes"], title="other"))
-    assert packet.fingerprint(changed) != rec["fingerprint"]
+def test_keys_follow_the_spec_pattern_and_records_hold_only_spec_fields(built):
+    import re
+    allowed = {"key", "attributes", "translations", "refs", "files", "position"}
+    for _t, recs in built[2].values():
+        for rec in recs:
+            assert re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:/@+-]{0,254}", rec["key"]), rec["key"]
+            assert set(rec) <= allowed
 
 
 def test_extract_body_nested_divs_and_home():
@@ -84,10 +90,11 @@ def test_manifest_lists_every_file_and_blob(built, site_root):
     s, _u, files, blobs, _g = built
     text, man = packet.render(s, files, blobs, site_root)
     paths = {e["path"] for e in man["files"]}
-    assert "records/pages.yml" in paths
+    assert {"packet.yml", "records/pages.yml"} <= paths
     assert sum(p.startswith("blobs/") for p in paths) == len(blobs)
     env = yaml.safe_load(text["packet.yml"])["better_together"]
-    assert env["version"] == "2.0" and env["seed"]["payload"]["target"]["platform"] == "required"
+    assert env["version"] == "2.0" and env["packet"]["mode"] == "add_only" and "target" not in env["packet"]
+    assert env["packet"]["records"] == sorted(files)
 
 
 def test_cli_dry_run_writes_nothing(site_root, tmp_path, capsys):
@@ -124,3 +131,18 @@ def test_out_inside_repo_must_be_tmp(site_root):
     with pytest.raises(SystemExit):
         seed_packet.main(["--root", site_root, "--out", os.path.join(site_root, "images", "pk")])
     assert seed_packet.main(["--root", site_root, "--out", os.path.join(site_root, "tmp", "pk"), "--blobs", "none"]) == 0
+
+
+def test_output_validates_against_cc_schemas_when_available(built, site_root):
+    """Set SEED_SCHEMA_DIR to the CE config/seeds/schema directory to check against the real JSON Schemas."""
+    jsonschema = pytest.importorskip("jsonschema")
+    schema_dir = os.environ.get("SEED_SCHEMA_DIR")
+    if not schema_dir or not os.path.isdir(schema_dir):
+        pytest.skip("SEED_SCHEMA_DIR not set")
+    load = lambda n: json.load(open(os.path.join(schema_dir, f"{n}.schema.json")))  # noqa: E731
+    s, _u, files, blobs, _g = built
+    text, man = packet.render(s, files, blobs, site_root)
+    jsonschema.validate(yaml.safe_load(text["packet.yml"])["better_together"], load("envelope"))
+    jsonschema.validate(man, load("manifest"))
+    for rel in files:
+        jsonschema.validate(yaml.safe_load(text[rel]), load("records"))

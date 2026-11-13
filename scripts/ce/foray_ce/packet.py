@@ -1,12 +1,13 @@
-"""Seed packet (protocol 2.0 draft layout) for the foray site.
+"""Seed packet for the foray site, following seed_packet_protocol.md (protocol 2.0, CE branch feat/seed-protocol-2-spec).
 
-packet.yml, MANIFEST.json, records/*.yml and blobs/<sha256>. Every place where the protocol or the CE models
-cannot carry the data is recorded in the gap log against the numbered deficiency list.
+packet.yml, MANIFEST.json, one records/<type>.yml per record type and blobs/<sha256>. Every place where the
+protocol or the CE models cannot carry the data is recorded in the gap log against the numbered deficiency list.
 """
 import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 
 import yaml
@@ -38,25 +39,34 @@ class Gaps:
         return [self.items[k] for k in sorted(self.items)]
 
 
-def fingerprint(record):
-    body = {k: record.get(k) for k in ("type", "key", "attributes", "translations", "refs", "files")}
-    return hashlib.sha256(json.dumps(body, sort_keys=True, ensure_ascii=False, default=str).encode()).hexdigest()[:16]
-
-
 def ref(rtype, key):
-    return {"ref": {"type": rtype, "key": key}}
+    return f"{rtype}:{key}"
 
 
-def record(rtype, key, attributes, translations=None, refs=None, files=None):
-    out = {"type": rtype, "key": key, "attributes": attributes}
+def record(key, attributes, translations=None, refs=None, files=None, position=None):
+    out = {"key": key, "attributes": attributes}
     if translations:
         out["translations"] = translations
     if refs:
         out["refs"] = refs
     if files:
         out["files"] = files
-    out["fingerprint"] = fingerprint(out)
+    if position is not None:
+        out["position"] = position
     return out
+
+
+def locale_first(fields):
+    """{'title': {'en': 'x'}} -> {'en': {'title': 'x'}} (the protocol keeps translations per locale)."""
+    out = {}
+    for name, per_locale in fields.items():
+        for locale, value in per_locale.items():
+            out.setdefault(locale, {})[name] = value
+    return out
+
+
+def page_key(site, file):
+    return site.path(file) or "home"
 
 
 def extract_body(html):
@@ -97,73 +107,36 @@ def audit_body(html, page, gaps):
                  "until the interactive link walk rewrites them", len(legacy))
     imgs = len(re.findall(r"<img\b", html))
     if imgs:
-        gaps.add(4, "inline-images-need-upload-refs", "Inline <img> src values are old paths; protocol has no "
+        gaps.add(4, "inline-images-need-upload-refs", "Inline <img> src values are old paths; the protocol has no "
                  "in-body file reference syntax", imgs)
 
 
-def build_uploads(uploads, gaps):
+def build_uploads(site, uploads, gaps):
     recs, blobs = [], {}
+    owner = site.meta["organization"]["legal_name"]
     for item in uploads:
         if item["status"] != "ok":
             gaps.add(3, "blob-" + item["status"], "File has no real bytes (git lfs pull or locate it)")
             continue
-        attrs = {"slug": item["slug"], "title": item["title"], "privacy": "public", "source_path": item["path"],
-                 "kind": item["kind"]}
+        attrs = {"slug": item["slug"], "privacy": "public", "source_path": item["path"], "kind": item["kind"]}
+        entry = {"attachment": "file", "blob": f"blobs/{item['sha256']}", "filename": item["filename"],
+                 "content_type": item["content_type"], "checksum": item["sha256"]}
         if item["alt"]:
-            attrs["alt_text"] = item["alt"]
-            gaps.add(2, "upload-alt-text", "Upload has no confirmed alt text field; carried as alt_text", 1)
-        files = [{"attachment": "file", "blob": item["sha256"], "filename": item["filename"],
-                  "content_type": item["content_type"], "checksum": item["sha256"], "size": item["size"]}]
-        recs.append(record("upload", f"upload:{item['slug']}", attrs, files=files))
-        blobs.setdefault(item["sha256"], {"source": item["path"], "size": item["size"], "owners": [],
-                                          "media_type": item["content_type"]})["owners"].append(f"upload:{item['slug']}")
+            entry["alt"] = {"en": item["alt"]}
+        recs.append(record(item["slug"], attrs, {"en": {"title": item["title"]}}, files=[entry]))
+        blobs.setdefault(item["sha256"], {"source": item["path"], "size": item["size"], "owner": owner,
+                                          "media_type": item["content_type"]})
     big = [u for u in uploads if u["size"] > 10 * 1024 * 1024]
     gaps.add(3, "blob-total", f"{sum(u['size'] for u in uploads)} bytes in {len(blobs)} blobs; the 10 MB cap covers the "
              "YAML only, so blobs need streaming reads and per-blob size policy", len(blobs))
     if big:
         gaps.add(3, "blob-over-10mb", "Blobs over 10 MB (largest need streaming)", len(big))
+    gaps.add(3, "blob-licence-unknown", "Manifest has owner and license per file; the licence of the foray images "
+             "and documents is not recorded in the repository (owner set to the organization)", len(blobs))
     ods = [u for u in uploads if u["kind"] == "spreadsheet"]
     if ods:
         gaps.add(2, "spreadsheet-upload", "Confirm Upload accepts .xlsx (species_lists/Omphalina contents.xlsx)", len(ods))
     return recs, blobs
-
-
-def build_pages(site, uploads_by_path, gaps):
-    pages, order = [], {}
-    for index, (file, page) in enumerate(site.pages.items()):
-        parent = page.get("parent")
-        order[parent] = order.get(parent, 0) + 1
-        path = site.path(file)
-        key = "page:" + (path or "home")
-        refs = {}
-        if parent:
-            refs["parent"] = ref("page", "page:" + (site.path(parent) or "home"))
-        if page.get("image"):
-            up = uploads_by_path.get(page["image"])
-            if up:
-                refs["share_image"] = ref("upload", f"upload:{up['slug']}")
-            gaps.add(2, "page-share-image", "Page has no share image field; carried as a ref plus share_image_alt")
-        if page.get("schema_type"):
-            gaps.add(2, "page-schema-type", "Page has no per-page schema_type field (needs yield :structured_data)")
-        if page.get("subnav") or page.get("subnav_hidden"):
-            gaps.add(2, "page-subnav-flags", "Horizontal section sub-nav and subnav_hidden have no model")
-        title = page.get("title") or page["name"]
-        attrs = {"identifier": site.own_slug(file), "path": path, "privacy": "public", "published": True,
-                 "position": order[parent], "source_file": file, "seo_title": seo_title(site, file),
-                 "schema_type": page.get("schema_type", "WebPage"), "share_image_alt": page.get("image_alt"),
-                 "subnav": bool(page.get("subnav")), "subnav_hidden": bool(page.get("subnav_hidden"))}
-        tr = {"title": {"en": title}, "meta_description": {"en": page["description"]}}
-        pages.append(record("page", key, attrs, tr, refs))
-        with open(os.path.join(site.root, file), encoding="utf-8") as handle:
-            body = extract_body(handle.read())
-        if body is None:
-            gaps.add(2, "page-without-main", f"{file} has no <main>")
-            continue
-        audit_body(body, file, gaps)
-        pages.append(record("content_block", f"block:{path or 'home'}:body",
-                            {"block_type": "html", "position": 0}, {"content_html": {"en": body}},
-                            {"page": ref("page", key)}))
-    return pages
 
 
 def seo_title(site, file):
@@ -174,105 +147,130 @@ def seo_title(site, file):
     return " | ".join(parts + [name])
 
 
+def build_pages(site, uploads_by_path, gaps):
+    pages, blocks, order = [], [], {}
+    for file, page in site.pages.items():
+        parent = page.get("parent")
+        order[parent] = order.get(parent, 0) + 1
+        key = page_key(site, file)
+        refs = {}
+        if parent:
+            refs["parent"] = ref("page", page_key(site, parent))
+        if page.get("image"):
+            up = uploads_by_path.get(page["image"])
+            if up:
+                refs["share_image"] = ref("upload", up["slug"])
+            gaps.add(2, "page-share-image", "Page has no share image field (and no alt for it); carried as a ref plus "
+                     "share_image_alt")
+        if page.get("schema_type"):
+            gaps.add(2, "page-schema-type", "Page has no per-page schema_type field (needs yield :structured_data)")
+        if page.get("subnav") or page.get("subnav_hidden"):
+            gaps.add(2, "page-subnav-flags", "Horizontal section sub-nav and subnav_hidden have no model")
+        attrs = {"slug": site.own_slug(file), "path": site.path(file), "privacy": "public", "published": True,
+                 "source_file": file, "seo_title": seo_title(site, file),
+                 "schema_type": page.get("schema_type", "WebPage"), "share_image_alt": page.get("image_alt"),
+                 "subnav": bool(page.get("subnav")), "subnav_hidden": bool(page.get("subnav_hidden"))}
+        tr = {"en": {"title": page.get("title") or page["name"], "meta_description": page["description"]}}
+        pages.append(record(key, attrs, tr, refs, position=order[parent]))
+        with open(os.path.join(site.root, file), encoding="utf-8") as handle:
+            body = extract_body(handle.read())
+        if body is None:
+            gaps.add(2, "page-without-main", f"{file} has no <main>")
+            continue
+        audit_body(body, file, gaps)
+        blocks.append(record(f"{key}.body", {"block_type": "html"}, {"en": {"content_html": body}},
+                             {"page": ref("page", key)}, position=0))
+    return pages, blocks
+
+
 def build_navigation(site, gaps):
-    recs = []
-    for area, tree_parent in (("header", site.home),):
-        recs.append(record("navigation_area", f"nav:{area}", {"name": area, "visible": True, "slug": area}))
-        position = {}
-        for file, page in site.pages.items():
-            if file == site.home:
-                continue
-            parent = page.get("parent")
-            depth = len(site.chain(file))
-            if depth > 2:
-                gaps.add(2, "nav-depth-3", "Third nav level; NavigationItem nesting depth is unverified", 1)
-            position[parent] = position.get(parent, 0) + 1
-            refs = {"area": ref("navigation_area", f"nav:{area}"), "page": ref("page", "page:" + site.path(file))}
-            if parent and parent != site.home:
-                refs["parent"] = ref("navigation_item", f"navitem:{area}:{site.path(parent)}")
-            recs.append(record("navigation_item", f"navitem:{area}:{site.path(file)}",
-                               {"position": position[parent], "visible": True}, {"title": {"en": page["name"]}}, refs))
+    areas = [record("header", {"name": "header", "visible": True}), record("footer", {"name": "footer", "visible": True})]
+    items, position = [], {}
+    for file, page in site.pages.items():
+        if file == site.home:
+            continue
+        parent = page.get("parent")
+        if len(site.chain(file)) > 2:
+            gaps.add(2, "nav-depth-3", "Third nav level; NavigationItem nesting depth is unverified")
+        position[parent] = position.get(parent, 0) + 1
+        refs = {"area": ref("navigation_area", "header"), "page": ref("page", page_key(site, file))}
+        if parent and parent != site.home:
+            refs["parent"] = ref("navigation_item", f"header/{site.path(parent)}")
+        items.append(record(f"header/{site.path(file)}", {"visible": True}, {"en": {"title": page["name"]}}, refs,
+                            position=position[parent]))
     gaps.add(2, "header-nav-from-registry", "Header menu membership and order live in layout/partials/nav.html "
              "(hand edited); the packet derives the tree from site-nav.yml parents")
-    recs.append(record("navigation_area", "nav:footer", {"name": "footer", "visible": True, "slug": "footer"}))
-    for group in ("explore", "involved", "legal"):
-        gkey = f"navitem:footer:group-{group}"
-        recs.append(record("navigation_item", gkey, {"position": ("explore", "involved", "legal").index(group) + 1,
-                                                    "visible": True, "heading": True},
-                           {"title": {"en": group.capitalize()}}, {"area": ref("navigation_area", "nav:footer")}))
-        for pos, file in enumerate(site.footer.get(group, []), 1):
-            refs = {"area": ref("navigation_area", "nav:footer"), "parent": ref("navigation_item", gkey),
-                    "page": ref("page", "page:" + (site.path(file) or "home"))}
-            recs.append(record("navigation_item", f"navitem:footer:{site.path(file) or 'home'}",
-                               {"position": pos, "visible": True}, {"title": {"en": site.pages[file]["name"]}}, refs))
-    recs.append(record("content_block", "block:footer:tagline", {"block_type": "text", "slot": "footer_tagline"},
-                       {"content": {"en": site.footer.get("tagline", "")}}, {"area": ref("navigation_area", "nav:footer")}))
+    for index, group in enumerate(("explore", "involved", "legal")):
+        gkey = f"footer/group-{group}"
+        items.append(record(gkey, {"visible": True, "heading": True}, {"en": {"title": group.capitalize()}},
+                            {"area": ref("navigation_area", "footer")}, position=index))
+        for pos, file in enumerate(site.footer.get(group, [])):
+            refs = {"area": ref("navigation_area", "footer"), "parent": ref("navigation_item", gkey),
+                    "page": ref("page", page_key(site, file))}
+            items.append(record(f"footer/{page_key(site, file)}", {"visible": True},
+                                {"en": {"title": site.pages[file]["name"]}}, refs, position=pos))
     gaps.add(2, "footer-tagline", "Footer tagline has no host model; carried as a slotted content_block")
-    return recs
+    tagline = record("footer.tagline", {"block_type": "text", "slot": "footer_tagline"},
+                     {"en": {"content": site.footer.get("tagline", "")}}, {"area": ref("navigation_area", "footer")},
+                     position=0)
+    return areas, items, tagline
 
 
 def build_events(site, uploads_by_path, gaps):
     recs, seen = [], {}
     for foray in site.forays:
         seen[foray["year"]] = seen.get(foray["year"], 0) + 1
-        key = f"event:foray-{foray['year']}" + (f"-{seen[foray['year']]}" if seen[foray["year"]] > 1 else "")
+        key = f"foray-{foray['year']}" + (f"-{seen[foray['year']]}" if seen[foray["year"]] > 1 else "")
         attrs = {"year": foray["year"], "status": foray.get("status", "held"), "venue": foray.get("venue"),
                  "area": foray.get("area"), "starts_at": str(foray["start"]) if foray.get("start") else None,
                  "ends_at": str(foray["end"]) if foray.get("end") else None, "review_note": foray.get("note")}
         refs = {}
         if foray.get("page"):
-            refs["page"] = ref("page", "page:" + site.path(foray["page"]))
+            refs["page"] = ref("page", page_key(site, foray["page"]))
         for field, path in (("report", foray.get("report")), ("card_art", (foray.get("art") or {}).get("file"))):
             up = uploads_by_path.get(path) if path else None
             if up:
-                refs[field] = ref("upload", f"upload:{up['slug']}")
+                refs[field] = ref("upload", up["slug"])
             elif path:
-                gaps.add(4, "event-" + field + "-unresolved", f"{field} {path} is not an inventoried upload", 1)
+                gaps.add(4, "event-" + field + "-unresolved", f"{field} {path} is not an inventoried upload (missing file)")
         if not foray.get("start"):
-            gaps.add(2, "event-without-dates", "Foray without a confirmed start date", 1)
-        recs.append(record("event", key, attrs, {"name": {"en": foray["name"]}}, refs))
+            gaps.add(2, "event-without-dates", "Foray without a confirmed start date")
+        recs.append(record(key, attrs, {"en": {"name": foray["name"]}}, refs))
     gaps.add(2, "event-fields", "Event has no year, status (cancelled), venue/area structure or report/card refs; "
              "carried as plain attributes", len(recs))
     gaps.add(1, "event-import", "Posts/Events are export-only today; nothing creates local records from this", len(recs))
     return recs
 
 
-def build_misc(site, gaps):
+def build_misc(site, uploads_by_path, gaps):
     socials = []
-    for pos, account in enumerate(site.socials, 1):
-        socials.append(record("social_media_account", f"social:{account['platform'].lower()}",
-                              {"platform": account["platform"], "handle": account["handle"], "url": account["url"],
-                               "position": pos, "icon": account["icon"]}))
+    for pos, account in enumerate(site.socials):
+        socials.append(record(account["platform"].lower(), {"platform": account["platform"], "handle": account["handle"],
+                                                            "url": account["url"], "icon": account["icon"]}, position=pos))
         if account["platform"].lower() == "flickr":
             gaps.add(2, "social-flickr", "SocialMediaAccount::PLATFORMS has no Flickr; needs a ContactDetail parent")
     org = site.meta["organization"]
-    org_rec = record("organization", "organization:main", {
-        "site_name": site.meta["name"], "canonical_url": site.meta["url"], "locale": site.meta["locale"], **org})
+    org_rec = record("main", {"site_name": site.meta["name"], "canonical_url": site.meta["url"],
+                              "locale": site.meta["locale"], **org})
     gaps.add(2, "organization-fields", "Legal name, telephone and locality have no confirmed Platform/Community fields")
-    volumes = []
-    for volume in site.omphalina:
-        vkey = f"omphalina:volume-{volume['volume']}"
-        volumes.append(record("omphalina_volume", vkey, {"volume": volume["volume"], "year": volume["year"]}, None,
-                              {"page": ref("page", "page:" + site.path(volume["page"]))}))
+    volumes, issues = [], []
+    for position, volume in enumerate(site.omphalina):
+        vkey = f"volume-{volume['volume']}"
+        volumes.append(record(vkey, {"volume": volume["volume"], "year": volume["year"]},
+                              refs={"page": ref("page", page_key(site, volume["page"]))}, position=position))
         for issue in volume["issues"]:
-            volumes.append(record("omphalina_issue", f"{vkey}:issue-{issue['issue']}",
-                                  {"issue": issue["issue"], "position": issue["issue"]}, None,
-                                  {"volume": ref("omphalina_volume", vkey), "pdf": ("@pdf", issue["pdf"]),
-                                   "cover": ("@thumb", issue["thumb"])}))
+            refs = {"volume": ref("omphalina_volume", vkey)}
+            for name, path in (("pdf", issue["pdf"]), ("cover", issue["thumb"])):
+                up = uploads_by_path.get(path)
+                if up:
+                    refs[name] = ref("upload", up["slug"])
+                else:
+                    gaps.add(4, f"issue-{name}-unresolved", f"{path} is not an inventoried upload (missing file)")
+            issues.append(record(f"{vkey}/issue-{issue['issue']}", {"issue": issue["issue"]}, refs=refs,
+                                 position=issue["issue"]))
     gaps.add(2, "omphalina-model", "Omphalina volumes and issues have no CE model; registered as new types",
-             len(volumes))
-    return socials, org_rec, volumes
-
-
-def resolve_issue_refs(volumes, uploads_by_path):
-    for rec in volumes:
-        for name, value in list(rec.get("refs", {}).items()):
-            if isinstance(value, tuple):
-                up = uploads_by_path.get(value[1])
-                rec["refs"][name] = ref("upload", f"upload:{up['slug']}") if up else None
-                if rec["refs"][name] is None:
-                    del rec["refs"][name]
-        rec["fingerprint"] = fingerprint(rec)
+             len(volumes) + len(issues))
+    return socials, org_rec, volumes, issues
 
 
 def source_commit(root):
@@ -285,56 +283,65 @@ def source_commit(root):
 
 
 def build(site, uploads, prefix="en", upload_template=redirectlib.DEFAULT_UPLOAD_TEMPLATE):
-    """Return (files, blobs, gaps): files maps 'records/x.yml' to a record list, plus the envelope data."""
+    """Return ({'records/x.yml': (type, [records])}, blobs, gaps)."""
     gaps = Gaps()
     by_path = {u["path"]: u for u in uploads if u["status"] == "ok"}
-    upload_recs, blobs = build_uploads(uploads, gaps)
-    pages = build_pages(site, by_path, gaps)
-    nav = build_navigation(site, gaps)
+    upload_recs, blobs = build_uploads(site, uploads, gaps)
+    pages, blocks = build_pages(site, by_path, gaps)
+    areas, items, tagline = build_navigation(site, gaps)
     events = build_events(site, by_path, gaps)
-    socials, org, volumes = build_misc(site, gaps)
-    resolve_issue_refs(volumes, by_path)
-    entries = redirectlib.build(site, uploads, prefix, upload_template)
-    red = [dict(r, fingerprint=fingerprint(r)) for r in redirectlib.records(entries)]
+    socials, org, volumes, issues = build_misc(site, by_path, gaps)
+    reds = redirectlib.records(redirectlib.build(site, uploads, prefix, upload_template))
     gaps.add(2, "redirect-model", "No Redirect model exists (work item D1); wildcard 404 rules and 410 are unsupported",
-             len(red))
+             len(reds))
     gaps.add(2, "redirect-upload-url", f"Upload redirect target assumes the planned short path {upload_template} "
              "(work item B1); today it is /:locale/f/:id/download")
+    gaps.add(2, "layout-one-type-per-file", "The plan listed records/{uploads,pages,navigation,...}.yml; the C1 spec "
+             "allows one type per file, so content blocks and nav items have their own files")
+    gaps.add(5, "provenance", "Stable natural keys are emitted; fingerprint and provenance columns belong to the planter (C7)")
+    gaps.add(6, "platform-target", "Packet carries no target; the caller supplies PLATFORM= (spec). Seed is still "
+             "global on (type, identifier) until C7")
     gaps.add(10, "no-unplant", "No tombstone or unplant model; reruns can only add or upsert")
-    gaps.add(6, "platform-target", "Packet requires an explicit platform: target; Seed is global on (type, identifier) today")
-    gaps.add(12, "locale-en-only", "All content is en; the packet declares default_locale en and no other locales")
+    gaps.add(12, "locale-en-only", "All content is en; the packet declares default_locale en and locales [en]")
     gaps.add(16, "packet-source", "ALLOWED_SEED_DIRECTORIES blocks this packet's location (tmp/ or a host-app directory)")
-    files = {"records/uploads.yml": upload_recs, "records/pages.yml": pages, "records/navigation.yml": nav,
-             "records/events.yml": events + [org], "records/social_accounts.yml": socials,
-             "records/omphalina.yml": volumes, "records/redirects.yml": red}
-    gaps.add(4, "cross-record-refs", "References use {ref: {type, key}} resolved packet-local; counted in the report",
-             sum(len(r.get("refs", {})) for recs in files.values() for r in recs))
+    files = {"records/uploads.yml": ("upload", upload_recs), "records/pages.yml": ("page", pages),
+             "records/content_blocks.yml": ("content_block", blocks + [tagline]),
+             "records/navigation_areas.yml": ("navigation_area", areas),
+             "records/navigation_items.yml": ("navigation_item", items), "records/events.yml": ("event", events),
+             "records/social_media_accounts.yml": ("social_media_account", socials),
+             "records/organizations.yml": ("organization", [org]),
+             "records/omphalina_volumes.yml": ("omphalina_volume", volumes),
+             "records/omphalina_issues.yml": ("omphalina_issue", issues),
+             "records/redirects.yml": ("redirect", reds)}
+    gaps.add(4, "cross-record-refs", "References use the type:key string form resolved packet-local; counted here",
+             sum(len(r.get("refs", {})) for _t, recs in files.values() for r in recs))
     return files, blobs, gaps
 
 
 def envelope(site, files, root):
     sha, stamp = source_commit(root)
+    notes = f"Generated by scripts/ce/seed_packet.py from {sha}" if sha else "Generated by scripts/ce/seed_packet.py"
     return {"better_together": {"version": "2.0", "seed": {
-        "type": "BetterTogether::Seed", "identifier": PACKET_ID, "version": "1.0", "created_by": "foray-ce seed_packet.py",
+        "type": "BetterTogether::Seed", "identifier": PACKET_ID, "created_by": "foray-ce seed_packet.py",
         "created_at": stamp, "description": f"Content of {site.meta['url']} as a seed packet",
-        "origin": {"lang": "en", "platforms": [], "source": {"repo": "foray-nl/nlmushrooms.ca", "commit": sha},
-                   "key_id": None},
-        "seed_pack": {"pack_type": "content", "install_tier": "optional", "marketing_name": site.meta["name"],
-                      "dependencies": [], "selectable_in_setup_wizard": False, "installer": "seeds_plant"},
-        "payload": {"target": {"platform": "required"}, "mode": "add_only", "default_locale": "en",
-                    "unsupported_locale_policy": "skip_with_report", "records": sorted(files)}}}}
+        "origin": {"platforms": [], "contributors": [site.meta["organization"]["legal_name"]], "usage_notes": notes}},
+        "seed_pack": {"schema_version": "1.0", "pack_type": "content", "install_tier": "optional",
+                      "marketing_name": site.meta["name"], "selectable_in_setup_wizard": False, "dependencies": []},
+        "packet": {"id": PACKET_ID, "version": "1.0.0", "mode": "add_only", "default_locale": "en", "locales": ["en"],
+                   "unsupported_locale_policy": "skip", "records": sorted(files), "manifest": "MANIFEST.json"}}}
 
 
-def manifest(files_text, blobs):
+def manifest(site, files_text, blobs, stamp):
+    owner = site.meta["organization"]["legal_name"]
     entries = []
     for rel, text in sorted(files_text.items()):
         data = text.encode("utf-8")
         entries.append({"path": rel, "sha256": hashlib.sha256(data).hexdigest(), "size": len(data),
-                        "media_type": "application/yaml", "owner": "packet"})
+                        "media_type": "application/yaml", "owner": owner})
     for sha, info in sorted(blobs.items()):
         entries.append({"path": f"blobs/{sha}", "sha256": sha, "size": info["size"], "media_type": info["media_type"],
-                        "owner": info["owners"]})
-    return {"packet": PACKET_ID, "protocol": "2.0", "files": entries}
+                        "owner": info["owner"]})
+    return {"schema": "2.0", "algorithm": "sha256", "packet_id": PACKET_ID, "generated_at": stamp, "files": entries}
 
 
 def dump(data):
@@ -342,9 +349,10 @@ def dump(data):
 
 
 def render(site, files, blobs, root):
-    text = {rel: dump({"records": recs}) for rel, recs in files.items()}
+    text = {rel: dump({"version": "2.0", "type": rtype, "records": recs}) for rel, (rtype, recs) in files.items()}
     text["packet.yml"] = dump(envelope(site, files, root))
-    man = manifest(text, blobs)
+    stamp = source_commit(root)[1]
+    man = manifest(site, text, blobs, stamp)
     text["MANIFEST.json"] = json.dumps(man, indent=2, ensure_ascii=False) + "\n"
     return text, man
 
@@ -358,10 +366,8 @@ def link_blob(src, dst, mode):
         try:
             os.link(src, dst)
         except OSError:
-            import shutil
             shutil.copyfile(src, dst)
     elif mode == "copy":
-        import shutil
         shutil.copyfile(src, dst)
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Builds the foray seed packet (protocol 2.0 draft layout) from layout/*.yml and the site files.
+"""Builds the foray seed packet (protocol 2.0, CE seed_packet_protocol.md) from layout/*.yml and the site files.
 
     python3 scripts/ce/seed_packet.py --dry-run                 plan only: counts, sizes, gaps, nothing written
     python3 scripts/ce/seed_packet.py --out tmp/ce/foray-nl-site [--blobs hardlink|symlink|copy|none]
@@ -40,7 +40,7 @@ def main(argv=None):
     pointers = summary["by_status"].get("lfs_pointer", 0)
     files, blobs, gaps = packet.build(s, uploads, args.locale_prefix, args.upload_url_template)
     text, man = packet.render(s, files, blobs, args.root)
-    report = {"uploads": summary, "records": {rel: len(recs) for rel, recs in sorted(files.items())},
+    report = {"uploads": summary, "records": {rel: len(recs) for rel, (_t, recs) in sorted(files.items())},
               "blobs": len(blobs), "manifest_files": len(man["files"]), "gaps": gaps.as_list()}
     print(json.dumps(report, indent=2))
     if pointers and not args.allow_pointers:

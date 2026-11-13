@@ -28,7 +28,7 @@ def render(entries, fmt):
         writer.writeheader()
         writer.writerows(entries)
         return buf.getvalue()
-    return yaml.safe_dump({"records": redirects.records(entries)}, sort_keys=False, allow_unicode=True)
+    return yaml.safe_dump({"version": "2.0", "type": "redirect", "records": redirects.records(entries)}, sort_keys=False, allow_unicode=True)
 
 
 def main(argv=None):

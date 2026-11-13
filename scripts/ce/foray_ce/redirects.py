@@ -1,4 +1,5 @@
 """Redirect map: every old URL of the static site to its clean CE path (or a deliberate 404), one hop each."""
+import hashlib
 import os
 import re
 from urllib.parse import unquote
@@ -96,13 +97,14 @@ def validate(entries):
     return entries
 
 
+def key(path):
+    """Record keys may not hold spaces or percent signs, so redirects are keyed by a hash of the old path."""
+    return hashlib.sha256(path.encode("utf-8")).hexdigest()[:16]
+
+
 def records(entries):
-    out = []
-    for entry in entries:
-        out.append({
-            "type": "redirect", "key": f"redirect:{entry['from']}",
-            "attributes": {"from_path": entry["from"], "to_path": entry["to"], "status": entry["status"],
-                           "match": "prefix" if entry["from"].endswith("/*") else "exact", "kind": entry["kind"],
-                           "source": entry["source"]},
-        })
-    return out
+    """Protocol record dicts (key, attributes) for records/redirects.yml."""
+    return [{"key": key(e["from"]),
+             "attributes": {"from_path": e["from"], "to_path": e["to"], "status": e["status"],
+                            "match": "prefix" if e["from"].endswith("/*") else "exact", "kind": e["kind"],
+                            "source": e["source"]}} for e in entries]

@@ -74,7 +74,7 @@ def test_cli_dry_run_writes_nothing_and_out_writes(s, tmp_path, capsys):
     assert redirect_map.main(["--root", s.root, "--out", str(out), "--dry-run"]) == 0
     assert not out.exists()
     assert redirect_map.main(["--root", s.root, "--out", str(out)]) == 0
-    assert "redirect:/foray_2025.html" in out.read_text()
+    assert "from_path: /foray_2025.html" in out.read_text()
     for fmt in ("json", "csv"):
         assert redirect_map.render(build(s), fmt).strip()
 
@@ -83,3 +83,9 @@ def test_netlify_parser_ignores_headers_tables(s):
     write(s.root, "netlify.toml", NETLIFY + '\n[[headers]]\n  for = "/*.html"\n  [headers.values]\n    Cache-Control = "x"\n')
     rules = redirects.netlify_rules(s.root)
     assert [r["from"] for r in rules] == ["/page40.html", "/archive/*"] and rules[0]["status"] == 301
+
+
+def test_record_keys_have_no_spaces_or_percent_and_are_unique(s):
+    recs = redirects.records(build(s))
+    keys = [r["key"] for r in recs]
+    assert len(set(keys)) == len(keys) and all(k.isalnum() for k in keys)
