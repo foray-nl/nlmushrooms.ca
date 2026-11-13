@@ -311,4 +311,5 @@ body > .page-breadcrumb + main { margin-top: 0.5rem; }
 .citations li { margin: 0 0 1rem; }
 .group-banners { list-style: none; margin: 0; padding: 0; }
 .group-banners li { margin: 0 0 1.25rem; }
-.group-banners img, .resource-logo { max-width: 100%; height: auto; }
+.group-banners img { max-width: 100%; height: auto; }
+.resource-logo { width: 56px; height: auto; }

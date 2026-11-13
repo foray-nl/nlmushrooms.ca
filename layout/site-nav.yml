@@ -86,7 +86,7 @@ pages:
     parent: resources.html
     description: Mycophile articles by Foray Newfoundland and Labrador members, from the bimonthly newsletter of the North American Mycological Association.
   - file: facebook_links.html
-    name: Face Book
+    name: Facebook
     parent: resources.html
     description: Facebook groups with a mycology theme that are of use to Foray Newfoundland and Labrador members, from regional to international.
   - file: osprey.html
