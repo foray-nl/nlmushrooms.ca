@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "index",
+    "about_us",
+    "contacts",
+    "foray_2026"
+  ],
+  "before_base": "docs/screenshots/baseline-0a1f1fa",
+  "after_base": "docs/screenshots/pr-social-icons/after"
+}
