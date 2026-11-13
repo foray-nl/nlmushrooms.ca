@@ -12,7 +12,7 @@ RSpec.describe '404 headlines', :js, type: :feature do
 
   around do |example|
     previous = Capybara.app
-    Capybara.app = Rack::Files.new(PageCapture.site_root)
+    Capybara.app = PageCapture.app
     example.run
   ensure
     Capybara.app = previous
