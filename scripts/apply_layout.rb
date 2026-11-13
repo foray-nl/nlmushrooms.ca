@@ -64,18 +64,21 @@ module ApplyLayout
     %(<nav class="page-breadcrumb" aria-label="breadcrumb">\n  <ol class="breadcrumb">\n#{items.join}  </ol>\n</nav>\n)
   end
 
+  # Horizontal sub-nav shown between the main nav and the page: the section title (links to its overview) and children.
   def section_nav(basename)
     sec = section_for(basename)
     return '' unless sec
 
-    links = [[sec['title'], sec['page']]] + sec['children'].map { |c| [c['title'], c['page']] }
-    items = links.map do |title, href|
-      active = href == basename
+    title_cls = sec['page'] == basename ? 'subnav-title active' : 'subnav-title'
+    title_cur = sec['page'] == basename ? ' aria-current="page"' : ''
+    items = sec['children'].map do |c|
+      active = c['page'] == basename
       cls = active ? 'nav-link active' : 'nav-link'
       cur = active ? ' aria-current="page"' : ''
-      %(    <li class="nav-item"><a class="#{cls}"#{cur} href="#{href}">#{CGI.escapeHTML(title)}</a></li>\n)
+      %(    <li class="nav-item"><a class="#{cls}"#{cur} href="#{c['page']}">#{CGI.escapeHTML(c['title'])}</a></li>\n)
     end
-    %(<nav class="section-nav" aria-label="#{CGI.escapeHTML(sec['title'])} section">\n  <ul class="nav nav-pills">\n#{items.join}  </ul>\n</nav>\n)
+    label = CGI.escapeHTML(sec['title'])
+    %(<nav class="subnav" aria-label="#{label} section">\n  <a class="#{title_cls}"#{title_cur} href="#{sec['page']}">#{label}</a>\n  <ul class="nav">\n#{items.join}  </ul>\n</nav>\n)
   end
 
   def render(source, page_path)

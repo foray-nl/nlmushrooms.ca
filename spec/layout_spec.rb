@@ -70,17 +70,24 @@ RSpec.describe ApplyLayout do
       expect(out).not_to include('mission.html</a></li>')
     end
 
-    it 'lists the overview and every child and marks only the current page' do
+    it 'builds the sub-nav with the section title and every child, marking only the current page' do
       out = described_class.render(page, 'board.html')
-      expect(out.scan('nav-link').size).to eq(6)
+      expect(out).to include('<a class="subnav-title" href="about_us.html">About Us</a>')
+      expect(out.scan('class="nav-link').size).to eq(5)
       expect(out.scan('aria-current="page" href').size).to eq(1)
       expect(out).to include('<a class="nav-link active" aria-current="page" href="board.html">Board</a>')
+    end
+
+    it 'marks the section title active on the overview page' do
+      out = described_class.render(page, 'about_us.html')
+      expect(out).to include('<a class="subnav-title active" aria-current="page" href="about_us.html">About Us</a>')
+      expect(out).not_to include('nav-link active')
     end
 
     it 'renders both regions empty for a page outside every section' do
       out = described_class.render(page, 'index.html')
       expect(out).not_to include('breadcrumb-item')
-      expect(out).not_to include('nav-link')
+      expect(out).not_to include('subnav')
     end
 
     it 'is idempotent' do
