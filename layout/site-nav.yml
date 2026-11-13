@@ -208,3 +208,17 @@ pages:
     parent: omphalina.html
     schema_type: CollectionPage
     description: "Omphalina Volume 1, 2010: download the 7 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: species_list_explanations.html
+    name: Species List
+    parent: index.html
+    subnav: true
+    description: Species lists for Foray Newfoundland and Labrador, with the fungi recorded at each foray, Omphalina indices and Flickr voucher images.
+  - file: flickr_image_index.html
+    name: Flickr Images
+    parent: species_list_explanations.html
+    title: Fungi Images on Flickr
+    description: Browse Foray NL's Flickr collection of fungi voucher photographs by phylum, group and class, from gilled mushrooms and polypores to lichens and slime molds.
+  - file: flickr_voucher_images.html
+    name: Phyla/Genera Images
+    parent: species_list_explanations.html
+    description: Voucher photographs of fungi from Foray NL forays on Flickr, browsable by phylum (Basidiomycetes, Ascomycetes, lichens, slime molds) and by genus.
