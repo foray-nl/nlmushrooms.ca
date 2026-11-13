@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "foray_2026",
+    "foray_2024",
+    "membership",
+    "resources",
+    "contacts"
+  ],
+  "before_base": "docs/screenshots/pr-seo-registry/before",
+  "after_base": "docs/screenshots/pr-seo-registry/after"
+}
