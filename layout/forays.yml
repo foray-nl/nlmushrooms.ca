@@ -39,6 +39,8 @@
   start: 2023-09-29
   end: 2023-10-01
   page: foray_2023.html
+  art: { file: images/Foray-2023-Poster.jpg }
+  art_alt: Foray 2023 poster
 - year: 2022
   name: Foray 2022
   area: Central Newfoundland
@@ -156,6 +158,8 @@
   start: 2008-09-12
   end: 2008-09-14
   report: foray_reports/2008_foray_report.pdf
+  art: { file: images/Foray-2008-Report-Cover.png }
+  art_alt: Cover of the Foray 2008 report
   note: The report file is listed on the old page but was never in the repository (see manifests/missing-files.yml).
 - year: 2007
   name: Foray 2007
