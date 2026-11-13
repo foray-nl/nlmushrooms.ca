@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "index",
+    "about_us",
+    "foray_2026",
+    "past_forays",
+    "404"
+  ],
+  "before_base": "docs/screenshots/pr-mobile-social/before",
+  "after_base": "docs/screenshots/pr-mobile-social/after"
+}
