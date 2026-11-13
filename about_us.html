@@ -20,19 +20,72 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
+    "@graph": [
       {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://nlmushrooms.ca/"
+        "@type": "Organization",
+        "@id": "https://nlmushrooms.ca/#organization",
+        "name": "Foray Newfoundland and Labrador",
+        "legalName": "Mushroom Foray Newfoundland and Labrador Inc.",
+        "url": "https://nlmushrooms.ca/",
+        "logo": "https://nlmushrooms.ca/android-chrome-512x512.png",
+        "email": "info@nlmushrooms.ca",
+        "telephone": "+1-709-437-5097",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Torbay",
+          "addressRegion": "NL",
+          "addressCountry": "CA"
+        },
+        "sameAs": [
+          "https://www.facebook.com/ForayNL",
+          "https://www.instagram.com/foraynl/",
+          "https://www.flickr.com/photos/foray_nl/"
+        ]
       },
       {
-        "@type": "ListItem",
-        "position": 2,
+        "@type": "WebSite",
+        "@id": "https://nlmushrooms.ca/#website",
+        "url": "https://nlmushrooms.ca/",
+        "name": "Foray Newfoundland and Labrador",
+        "inLanguage": "en-CA",
+        "publisher": {
+          "@id": "https://nlmushrooms.ca/#organization"
+        }
+      },
+      {
+        "@type": "AboutPage",
+        "@id": "https://nlmushrooms.ca/about_us.html#webpage",
+        "url": "https://nlmushrooms.ca/about_us.html",
         "name": "About Us",
-        "item": "https://nlmushrooms.ca/about_us.html"
+        "description": "How Foray Newfoundland and Labrador began in 2003 and grew, from the first forays to the Omphalina newsletter, the website and the people behind them.",
+        "inLanguage": "en-CA",
+        "isPartOf": {
+          "@id": "https://nlmushrooms.ca/#website"
+        },
+        "about": {
+          "@id": "https://nlmushrooms.ca/#organization"
+        },
+        "breadcrumb": {
+          "@id": "https://nlmushrooms.ca/about_us.html#breadcrumb"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://nlmushrooms.ca/about_us.html#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://nlmushrooms.ca/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About Us",
+            "item": "https://nlmushrooms.ca/about_us.html"
+          }
+        ]
       }
     ]
   }

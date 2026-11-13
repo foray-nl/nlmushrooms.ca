@@ -10,7 +10,7 @@
 #   <!-- /layout:nav -->
 #
 # Regions: head (shared <link>s), header, nav, footer, plus generated regions built from the page registry
-# layout/site-nav.yml: meta (<title>, description, canonical, Open Graph and Twitter tags, BreadcrumbList JSON-LD), breadcrumb and section-nav; and the social region (layout/socials.yml; the header partial gets the same
+# layout/site-nav.yml: meta (<title>, description, canonical, Open Graph and Twitter tags, JSON-LD graph), breadcrumb and section-nav; and the social region (layout/socials.yml; the header partial gets the same
 # accounts through its {{social-links}} token). Everything outside the markers is left alone.
 # In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
@@ -103,7 +103,7 @@ module ApplyLayout
     out << %(<meta name="description" content="#{CGI.escapeHTML(page['description'])}">\n)
     out << %(<link rel="canonical" href="#{canonical_url(basename)}">\n)
     out << social_meta(page, basename)
-    out << breadcrumb_jsonld(basename)
+    out << jsonld(basename)
     out
   end
 
@@ -122,17 +122,56 @@ module ApplyLayout
     tags.map { |attr, key, value| %(<meta #{attr}="#{key}" content="#{CGI.escapeHTML(value)}">\n) }.join
   end
 
-  def breadcrumb_jsonld(basename)
-    chain = trail(basename)
-    return '' if chain.size <= 1
+  # One JSON-LD @graph per page: Organization, WebSite, the page itself (AboutPage, ContactPage, ... via the registry's
+  # `schema_type`, default WebPage) and, below the home page, its BreadcrumbList. Nodes reference each other by @id.
+  def jsonld(basename)
+    graph = [organization, website, webpage(basename)]
+    crumbs = breadcrumb_list(basename)
+    graph << crumbs if crumbs
+    data = { '@context' => 'https://schema.org', '@graph' => graph }
+    %(<script type="application/ld+json">\n#{JSON.pretty_generate(data).gsub('</', '<\\/')}\n</script>\n)
+  end
 
-    data = {
-      '@context' => 'https://schema.org', '@type' => 'BreadcrumbList',
+  def org_id = "#{site['url']}/#organization"
+  def website_id = "#{site['url']}/#website"
+
+  def organization
+    org = site['organization']
+    {
+      '@type' => 'Organization', '@id' => org_id, 'name' => site['name'], 'legalName' => org['legal_name'],
+      'url' => "#{site['url']}/", 'logo' => "#{site['url']}/#{org['logo']}", 'email' => org['email'],
+      'telephone' => org['telephone'],
+      'address' => { '@type' => 'PostalAddress', 'addressLocality' => org['locality'], 'addressRegion' => org['region'],
+                     'addressCountry' => org['country'] },
+      'sameAs' => socials.map { |a| a['url'] }
+    }
+  end
+
+  def website
+    { '@type' => 'WebSite', '@id' => website_id, 'url' => "#{site['url']}/", 'name' => site['name'],
+      'inLanguage' => 'en-CA', 'publisher' => { '@id' => org_id } }
+  end
+
+  def webpage(basename)
+    page = entry(basename)
+    url = canonical_url(basename)
+    node = {
+      '@type' => page['schema_type'] || 'WebPage', '@id' => "#{url}#webpage", 'url' => url,
+      'name' => trail(basename).size > 1 ? segment(page) : site['name'], 'description' => page['description'], 'inLanguage' => 'en-CA',
+      'isPartOf' => { '@id' => website_id }, 'about' => { '@id' => org_id }
+    }
+    node['breadcrumb'] = { '@id' => "#{url}#breadcrumb" } if trail(basename).size > 1
+    node
+  end
+
+  def breadcrumb_list(basename)
+    chain = trail(basename)
+    return nil if chain.size <= 1
+
+    { '@type' => 'BreadcrumbList', '@id' => "#{canonical_url(basename)}#breadcrumb",
       'itemListElement' => chain.each_with_index.map do |p, i|
         { '@type' => 'ListItem', 'position' => i + 1, 'name' => p['name'], 'item' => canonical_url(p['file']) }
-      end
-    }
-    %(<script type="application/ld+json">\n#{JSON.pretty_generate(data).gsub('</', '<\\/')}\n</script>\n)
+      end }
   end
 
   def socials

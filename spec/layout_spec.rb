@@ -187,7 +187,8 @@ RSpec.describe ApplyLayout do
       described_class.registry.drop(1).each do |p|
         out = described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n<!-- layout:breadcrumb -->\n<!-- /layout:breadcrumb -->\n", p['file'])
         expect(out).to include(%(<link rel="canonical" href="https://nlmushrooms.ca/#{p['file']}">))
-        json = JSON.parse(out[%r{<script type="application/ld\+json">\n(.*?)\n</script>}m, 1])
+        graph = JSON.parse(out[%r{<script type="application/ld\+json">\n(.*?)\n</script>}m, 1])['@graph']
+        json = graph.find { |n| n['@type'] == 'BreadcrumbList' }
         names = json['itemListElement'].map { |i| i['name'] }
         visible = out.scan(%r{<li class="breadcrumb-item[^"]*"[^>]*>(?:<a [^>]*>)?([^<]+)}).flatten.map { |n| CGI.unescapeHTML(n) }
         expect(json['@type']).to eq('BreadcrumbList')
@@ -200,6 +201,7 @@ RSpec.describe ApplyLayout do
     it 'has no breadcrumb and no BreadcrumbList on the home page, and a bare canonical' do
       out = described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", 'index.html')
       expect(out).not_to include('BreadcrumbList')
+      expect(out).to include('"@type": "WebPage"')
       expect(out).to include('href="https://nlmushrooms.ca/"')
     end
   end
@@ -239,6 +241,55 @@ RSpec.describe ApplyLayout do
     it 'uses the poster as the share image on the foray pages and the logo elsewhere' do
       expect(described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", 'foray_2026.html')).to include('images/share/foray-2026.jpg')
       expect(described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", 'contacts.html')).to include('images/share/default.jpg')
+    end
+  end
+
+  describe 'JSON-LD graph' do
+    def graph_for(file)
+      out = described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", file)
+      JSON.parse(out[%r{<script type="application/ld\+json">\n(.*?)\n</script>}m, 1])
+    end
+
+    it 'is valid JSON with Organization, WebSite and a page node on every registered page' do
+      described_class.registry.each do |p|
+        data = graph_for(p['file'])
+        graph = data['@graph']
+        expect(data['@context']).to eq('https://schema.org')
+        types = graph.map { |n| n['@type'] }
+        expect(types).to include('Organization', 'WebSite')
+        page = graph.find { |n| n['@id'] == "#{described_class.canonical_url(p['file'])}#webpage" }
+        expect(page).not_to be_nil
+        expect(page['@type']).to eq(p['schema_type'] || 'WebPage')
+        expect(page['url']).to eq(described_class.canonical_url(p['file']))
+        expect(page['description']).to eq(p['description'])
+      end
+    end
+
+    it 'resolves every @id reference to a node in the same graph and uses absolute URLs' do
+      described_class.registry.each do |p|
+        graph = graph_for(p['file'])['@graph']
+        ids = graph.map { |n| n['@id'] }
+        refs = JSON.generate(graph).scan(/"([a-z]+)":\{"@id":"([^"]+)"\}/).map(&:last)
+        expect(refs - ids).to be_empty, "#{p['file']}: unresolved #{refs - ids}"
+        urls = JSON.generate(graph).scan(/"(?:url|item|logo)":"([^"]+)"/).flatten
+        expect(urls).to all(start_with('https://nlmushrooms.ca/'))
+      end
+    end
+
+    it 'describes the organization from the registry and the social accounts' do
+      org = graph_for('index.html')['@graph'].find { |n| n['@type'] == 'Organization' }
+      expect(org['legalName']).to eq('Mushroom Foray Newfoundland and Labrador Inc.')
+      expect(org['sameAs']).to eq(described_class.socials.map { |a| a['url'] })
+      expect(org['telephone']).to match(/\A\+1-\d{3}-\d{3}-\d{4}\z/)
+      expect(org['address']).not_to have_key('streetAddress')
+      expect(File).to exist(File.join(described_class::ROOT, org['logo'].sub('https://nlmushrooms.ca/', '')))
+    end
+
+    it 'types the About and Contact pages and links child pages to their breadcrumb' do
+      expect(graph_for('about_us.html')['@graph'].map { |n| n['@type'] }).to include('AboutPage')
+      expect(graph_for('contacts.html')['@graph'].map { |n| n['@type'] }).to include('ContactPage')
+      page = graph_for('mission.html')['@graph'].find { |n| n['@id'].end_with?('#webpage') }
+      expect(page['breadcrumb']['@id']).to eq('https://nlmushrooms.ca/mission.html#breadcrumb')
     end
   end
 end

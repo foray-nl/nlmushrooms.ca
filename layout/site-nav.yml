@@ -8,12 +8,22 @@
 # <title> is "<title or name> | <each parent's title or name, nearest first, home excluded> | <site name>",
 # e.g. "Contact Us | About Us | Foray Newfoundland and Labrador". The home page's title is the site name alone.
 #
+# `schema_type` (optional) sets the page's schema.org type: AboutPage, ContactPage, CollectionPage; default WebPage.
 # Share image (Open Graph / Twitter): `image` is a 1200x630 file under images/share/ (scripts/share_images.py builds them),
 # `image_alt` describes it. The site-level image is the default; a page may set its own `image` and `image_alt`.
 site:
   name: Foray Newfoundland and Labrador
   url: https://nlmushrooms.ca
   locale: en_CA
+  # Organization JSON-LD. No street address on purpose: only the town and province are published as data.
+  organization:
+    legal_name: Mushroom Foray Newfoundland and Labrador Inc.
+    logo: android-chrome-512x512.png
+    email: info@nlmushrooms.ca
+    telephone: "+1-709-437-5097"
+    locality: Torbay
+    region: NL
+    country: CA
   image: images/share/default.jpg
   image_alt: "Foray Newfoundland and Labrador logo: a chanterelle mushroom beside the words Foray Newfoundland and Labrador"
 pages:
@@ -54,6 +64,7 @@ pages:
     name: About Us
     parent: index.html
     subnav: true
+    schema_type: AboutPage
     description: How Foray Newfoundland and Labrador began in 2003 and grew, from the first forays to the Omphalina newsletter, the website and the people behind them.
   - file: mission.html
     name: Mission
@@ -75,5 +86,6 @@ pages:
   - file: contacts.html
     name: Contacts
     parent: about_us.html
+    schema_type: ContactPage
     title: Contact Us
     description: Contact Foray Newfoundland and Labrador by email, telephone or mail, and find the organization on Facebook, Instagram and Flickr.
