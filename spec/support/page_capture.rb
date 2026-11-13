@@ -75,7 +75,7 @@ module PageCapture
     data = File.exist?(file) ? JSON.parse(File.read(file)) : {}
     data[path] = {
       'violations' => results.violations.map do |v|
-        { 'id' => v.id, 'impact' => v.impact, 'nodes' => v.nodes.size }
+        { 'id' => v.id, 'impact' => v.impact, 'nodes' => v.nodes.size, 'targets' => v.nodes.map { |n| n.target.to_s }.first(5) }
       end,
       'broken_images' => broken_imgs
     }

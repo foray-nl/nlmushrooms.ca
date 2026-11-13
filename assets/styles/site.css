@@ -206,3 +206,42 @@ main.page a { color: #b8480f; }
   .history h3 { break-after: avoid; }
 }
 .history .source { margin-top: 1.5em; font-size: 0.9em; column-span: all; }
+
+/* Breadcrumb and section sub-nav (pages that belong to a section) */
+.page-breadcrumb { margin: 0 0 1rem; }
+.page-breadcrumb .breadcrumb { margin: 0; font-size: 0.95em; --bs-breadcrumb-divider-color: #243542; --bs-breadcrumb-item-active-color: #243542; }
+.page-breadcrumb .breadcrumb a { color: #b8480f; }
+/* Sub-nav: light bar directly under the dark main nav, smaller type, underline marks the current page */
+.subnav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem 1.25rem;
+  padding: 0.35rem 1rem;
+  background: #fde2bd;
+  border-bottom: 3px solid #ee722a;
+  font-size: 0.95rem;
+}
+.subnav .subnav-title {
+  color: #243542;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  text-decoration: none;
+  padding: 0.3em 0;
+  line-height: 1.5;
+  border-bottom: 3px solid transparent;
+}
+.subnav .subnav-title::after { content: ""; display: inline-block; width: 1px; height: 1em; background: #243542; opacity: 0.4; margin-left: 1.25rem; vertical-align: -0.15em; }
+.subnav .nav { flex-wrap: wrap; gap: 0 0.25rem; margin: 0; padding: 0; list-style: none; }
+.subnav .nav-link { color: #243542; line-height: 1.5; padding: 0.3em 0.7em; border-bottom: 3px solid transparent; border-radius: 0; font-weight: 500; }
+.subnav .nav-link:hover, .subnav .nav-link:focus, .subnav .subnav-title:hover, .subnav .subnav-title:focus { color: #243542; border-bottom-color: #ee722a; outline: none; }
+.subnav .nav-link.active, .subnav .subnav-title.active { border-bottom-color: #243542; font-weight: 700; }
+@media (max-width: 991.98px) {
+  .subnav { gap: 0; padding: 0.4rem 0.5rem; }
+  .subnav .subnav-title { flex: 1 0 100%; text-align: center; }
+  .subnav .subnav-title::after { display: none; }
+  .subnav .nav { justify-content: center; }
+}

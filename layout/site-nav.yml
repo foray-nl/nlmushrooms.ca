@@ -1,0 +1,13 @@
+# Page hierarchy used for breadcrumbs and section side menus (scripts/apply_layout.rb).
+# A page opts in with <!-- layout:breadcrumb --> and <!-- layout:section-nav --> markers.
+# The first page of a section is the section's overview; children follow in menu order.
+home: index.html
+sections:
+  - title: About Us
+    page: about_us.html
+    children:
+      - { title: Mission, page: mission.html }
+      - { title: Board, page: board.html }
+      - { title: By Laws, page: bylaws.html }
+      - { title: Consultants, page: consultants.html }
+      - { title: Contacts, page: contacts.html }

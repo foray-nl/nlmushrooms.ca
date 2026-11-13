@@ -1,0 +1,12 @@
+{
+  "pages": [
+    "about_us",
+    "mission",
+    "board",
+    "bylaws",
+    "consultants",
+    "contacts"
+  ],
+  "before_base": "docs/screenshots/baseline-0a1f1fa",
+  "after_base": "docs/screenshots/pr-about-section/after"
+}
