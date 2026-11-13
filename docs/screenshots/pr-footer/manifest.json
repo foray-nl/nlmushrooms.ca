@@ -1,0 +1,10 @@
+{
+  "pages": [
+    "mission",
+    "404",
+    "footer_next_foray_shown",
+    "footer_no_upcoming_foray"
+  ],
+  "before_base": "docs/screenshots/pr-footer/before",
+  "after_base": "docs/screenshots/pr-footer/after"
+}

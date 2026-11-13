@@ -26,11 +26,12 @@ require 'date'
 module ApplyLayout
   ROOT = File.expand_path('..', __dir__)
   PARTIALS = File.join(ROOT, 'layout', 'partials')
-  REGIONS = %w[head header nav footer].freeze
-  GENERATED = %w[meta breadcrumb section-nav social forays reports issues volumes].freeze
+  REGIONS = %w[head header nav].freeze
+  GENERATED = %w[meta breadcrumb section-nav social forays reports issues volumes footer].freeze
   OMPHALINA = File.join(ROOT, 'layout', 'omphalina.yml')
   FORAYS = File.join(ROOT, 'layout', 'forays.yml')
   SOCIALS = File.join(ROOT, 'layout', 'socials.yml')
+  FOOTER = File.join(ROOT, 'layout', 'footer.yml')
   HIERARCHY = File.join(ROOT, 'layout', 'site-nav.yml')
   SHARE_SIZE = [1200, 630].freeze
 
@@ -355,6 +356,57 @@ module ApplyLayout
     end
   end
 
+  def footer_config = @footer_config ||= YAML.safe_load_file(FOOTER)
+
+  def footer_links(files, indent)
+    files.map do |file|
+      page = entry(file) or raise "layout/footer.yml names #{file}, which is not in layout/site-nav.yml"
+      %(#{indent}<li><a href="#{file}">#{CGI.escapeHTML(page['name'])}</a></li>\n)
+    end.join
+  end
+
+  # The most recent foray that is not cancelled. It is written hidden with its dates; assets/scripts/site.js shows it
+  # only while the foray is ongoing or still ahead, so the footer never advertises a foray that has passed and the
+  # generated HTML does not depend on today's date.
+  def footer_next_foray
+    foray = forays.find { |f| f['start'] && !f['status'] }
+    return '' unless foray
+
+    place = [foray['venue'], foray['area']].compact.join(', ')
+    name = CGI.escapeHTML(foray['name'])
+    label = foray['page'] ? %(<a href="#{foray['page']}">#{name}</a>) : name
+    detail = [date_text(foray), place].reject { |t| t.nil? || t.empty? }.map { |t| CGI.escapeHTML(t) }.join(', ')
+    %(  <p class="footer-next-foray" data-start="#{foray['start']}" data-end="#{foray['end'] || foray['start']}" hidden><strong>Next foray:</strong> #{label}, #{detail}</p>\n)
+  end
+
+  def footer(basename)
+    cfg = footer_config
+    social = socials.map do |a|
+      %(        <li><a href="#{a['url']}" target="_blank" rel="noopener noreferrer"><i class="fa-brands #{a['icon']}" aria-hidden="true"></i> #{a['platform']}<span class="visually-hidden"> (opens in a new tab)</span></a></li>\n)
+    end.join
+    # The 404 page resolves links from the site root (<base href="/">), where "#page-top" would leave the page.
+    top = basename == '404.html' ? '' : %(      <li><a href="#page-top">Back to top</a></li>\n)
+    [
+      %(<footer class="site-footer">\n),
+      %(  <div class="footer-inner">\n),
+      %(    <div class="footer-brand">\n),
+      %(      <img src="android-chrome-192x192.png" alt="" width="56" height="56">\n),
+      %(      <p class="footer-name">Foray Newfoundland and Labrador</p>\n),
+      %(      <p>#{CGI.escapeHTML(cfg['tagline'])}</p>\n),
+      %(      <ul class="footer-social" aria-label="Foray NL on social media">\n#{social}      </ul>\n),
+      %(    </div>\n),
+      %(    <nav class="footer-col" aria-labelledby="footer-explore">\n      <h2 id="footer-explore">Explore</h2>\n      <ul>\n#{footer_links(cfg['explore'], '        ')}      </ul>\n    </nav>\n),
+      %(    <nav class="footer-col" aria-labelledby="footer-involved">\n      <h2 id="footer-involved">Get involved</h2>\n      <ul>\n#{footer_links(cfg['involved'], '        ')}      </ul>\n    </nav>\n),
+      %(  </div>\n),
+      footer_next_foray,
+      %(  <div class="footer-bar">\n),
+      %(    <p>&copy; 2003 to present Foray Newfoundland and Labrador, a not-for-profit organization.</p>\n),
+      %(    <ul>\n#{footer_links(cfg['legal'], '      ')}#{top}    </ul>\n),
+      %(  </div>\n),
+      %(</footer>\n)
+    ].join
+  end
+
   def breadcrumb(basename)
     chain = trail(basename)
     return '' if chain.size <= 1
@@ -408,7 +460,7 @@ module ApplyLayout
     GENERATED.reduce(source) do |text, name|
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)
-        body = { 'meta' => meta(basename), 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list), 'forays' => foray_directory, 'reports' => report_list, 'issues' => issue_grid(basename), 'volumes' => volume_list }.fetch(name)
+        body = { 'meta' => meta(basename), 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list), 'forays' => foray_directory, 'reports' => report_list, 'issues' => issue_grid(basename), 'volumes' => volume_list, 'footer' => footer(basename) }.fetch(name)
         lines = body.lines.map { |l| "#{indent}#{l}" }.join
         "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
       end
