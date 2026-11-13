@@ -10,7 +10,7 @@
 #   <!-- /layout:nav -->
 #
 # Regions: head (shared <link>s), header, nav, footer. Everything outside the markers is left alone.
-# In the nav region the link to the page being written gets class="active".
+# In the nav region the link to the page being written gets class="nav-link active" and aria-current="page".
 #
 #   ruby scripts/apply_layout.rb            rewrite every page that has markers
 #   ruby scripts/apply_layout.rb --check    exit 1 and list pages that differ (CI drift check); writes nothing
@@ -47,7 +47,9 @@ module ApplyLayout
   end
 
   def mark_active(nav, basename)
-    nav.gsub(/<a href="#{Regexp.escape(basename)}"/) { %(<a href="#{basename}" class="active") }
+    nav.gsub(/<a class="nav-link" href="#{Regexp.escape(basename)}"/) do
+      %(<a class="nav-link active" aria-current="page" href="#{basename}")
+    end
   end
 
   def run(argv)

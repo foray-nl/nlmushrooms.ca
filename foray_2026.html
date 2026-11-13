@@ -20,7 +20,9 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap-nav.css">
   <link rel="stylesheet" href="assets/styles/site.css">
+  <script defer src="assets/vendor/bootstrap/bootstrap.bundle.min.js"></script>
   <!-- /layout:head -->
 </head>
 <body>
@@ -30,16 +32,23 @@
   </header>
   <!-- /layout:header -->
   <!-- layout:nav -->
-  <nav aria-label="Main navigation">
-    <a href="index.html">Home</a>
-    <a href="foray_2026.html" class="active">Foray 2026</a>
-    <a href="foray_reports.html">Foray Reports</a>
-    <a href="species_list_explanations.html">Species List</a>
-    <a href="omphalina.html">Omphalina</a>
-    <a href="science.html">Science</a>
-    <a href="resources.html">Resources</a>
-    <a href="about_us.html">About Us</a>
-    <a href="membership.html">Membership</a>
+  <nav class="navbar navbar-expand-lg navbar-dark" aria-label="Main navigation">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNav" aria-controls="siteNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-center" id="siteNav">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link active" aria-current="page" href="foray_2026.html">Foray 2026</a></li>
+        <li class="nav-item"><a class="nav-link" href="foray_reports.html">Foray Reports</a></li>
+        <li class="nav-item"><a class="nav-link" href="species_list_explanations.html">Species List</a></li>
+        <li class="nav-item"><a class="nav-link" href="omphalina.html">Omphalina</a></li>
+        <li class="nav-item"><a class="nav-link" href="science.html">Science</a></li>
+        <li class="nav-item"><a class="nav-link" href="resources.html">Resources</a></li>
+        <li class="nav-item"><a class="nav-link" href="about_us.html">About Us</a></li>
+        <li class="nav-item"><a class="nav-link" href="membership.html">Membership</a></li>
+      </ul>
+    </div>
   </nav>
   <!-- /layout:nav -->
   <main>

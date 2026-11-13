@@ -72,3 +72,13 @@ region in marker comments:
 runs the same check, so CI fails on drift. Edit the partial, never the marked region in a page. Pages stay plain
 static HTML, so Netlify serves them unchanged. Currently `foray_2025.html` and `foray_2026.html` use it; the legacy
 pages adopt it as they are converted.
+
+### Nav and Bootstrap
+
+The nav partial uses the same Bootstrap 5 markup as the Community Engine gem (`navbar navbar-expand-lg navbar-dark`,
+a `navbar-toggler`, and a `collapse navbar-collapse` list), so it collapses behind a toggler below 992 px and the
+partial can move into a CE host app unchanged. Only the navbar, nav-link and collapse rules are vendored (full
+Bootstrap would restyle every page), plus the unmodified JS bundle, all self-hosted in `assets/vendor/bootstrap/`.
+`ruby scripts/vendor_bootstrap_nav.rb [VERSION]` regenerates them; site colours and spacing live in
+`assets/styles/site.css`. `RUN_VISUAL=1 bundle exec rspec spec/visual/nav_spec.rb` checks the toggle and that nothing
+scrolls sideways at 430, 992, 1200 and 1440 px.
