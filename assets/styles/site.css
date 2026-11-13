@@ -154,6 +154,11 @@ h1, h2, h3 {
   color: #222;
   outline: none;
 }
+.registration-btn.is-disabled {
+  background: #595959;
+  color: #fff;
+  cursor: not-allowed;
+}
 .info-links a {
   color: #b8480f;
   text-decoration: underline;
