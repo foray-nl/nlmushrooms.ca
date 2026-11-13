@@ -24,7 +24,7 @@ module PageCapture
 
   # Every HTML page on disk (sitemap.xml is known to be incomplete), as paths relative to the site root.
   def pages
-    Dir.chdir(site_root) { Dir.glob('**/*.html').reject { |f| f.start_with?('tmp/', 'vendor/') }.sort }
+    Dir.chdir(site_root) { Dir.glob('**/*.html').reject { |f| f.start_with?('tmp/', 'vendor/', 'layout/') }.sort }
   end
 
   def slug(path) = path.sub(/\.html\z/, '').gsub(%r{[^A-Za-z0-9]+}, '_').gsub(/\A_|_\z/, '').downcase

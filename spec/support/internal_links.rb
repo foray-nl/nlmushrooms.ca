@@ -12,7 +12,7 @@ module InternalLinks
   ATTRS = { 'a' => 'href', 'area' => 'href', 'img' => 'src', 'link' => 'href', 'script' => 'src',
             'iframe' => 'src', 'source' => 'src', 'form' => 'action' }.freeze
   EXTERNAL = %r{\A(?:[a-z][a-z0-9+.-]*:|//)}i
-  SKIP_DIRS = %w[tmp/ vendor/ docs/ node_modules/].freeze
+  SKIP_DIRS = %w[tmp/ vendor/ docs/ layout/ node_modules/].freeze
 
   module_function
 
