@@ -16,7 +16,7 @@ RSpec.describe "Site navigation", type: :feature do
   NAV_LINKS.each do |path|
     it "navigates to #{path} and finds heading and content" do
       visit "/index.html"
-      within("nav") { click_link href: path }
+      within(%(nav[aria-label="Main navigation"])) { click_link href: path }
       expect(page).to have_current_path("/#{path}")
       expect(page.title).not_to be_empty
       expect(page).to have_css("p", minimum: 1)

@@ -1,0 +1,28 @@
+/*!
+ * Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com
+ * License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+ * Copyright 2024 Fonticons, Inc.
+ * Subset: only the Facebook, Instagram and Flickr brand glyphs, with the same class names Community Engine uses
+ * (fa-brands fa-facebook, fa-instagram, fa-flickr). Add glyphs by re-running pyftsubset (see README, "Icons").
+ */
+@font-face {
+  font-family: "Font Awesome 6 Brands";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fa-brands-subset.woff2") format("woff2");
+}
+.fa-brands {
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  display: inline-block;
+  font-family: "Font Awesome 6 Brands";
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
+  line-height: 1;
+  text-rendering: auto;
+}
+.fa-facebook::before { content: "\f09a"; }
+.fa-instagram::before { content: "\f16d"; }
+.fa-flickr::before { content: "\f16e"; }

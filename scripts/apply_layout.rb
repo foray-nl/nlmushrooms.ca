@@ -10,7 +10,8 @@
 #   <!-- /layout:nav -->
 #
 # Regions: head (shared <link>s), header, nav, footer, plus the generated breadcrumb and section-nav regions (built from
-# layout/site-nav.yml for pages listed there). Everything outside the markers is left alone.
+# layout/site-nav.yml for pages listed there) and the social region (layout/socials.yml; the header partial gets the same
+# accounts through its {{social-links}} token). Everything outside the markers is left alone.
 # In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
 #   ruby scripts/apply_layout.rb            rewrite every page that has markers
@@ -18,12 +19,14 @@
 #   ruby scripts/apply_layout.rb a.html     only the named pages
 require 'yaml'
 require 'cgi'
+require 'digest'
 
 module ApplyLayout
   ROOT = File.expand_path('..', __dir__)
   PARTIALS = File.join(ROOT, 'layout', 'partials')
   REGIONS = %w[head header nav footer].freeze
-  GENERATED = %w[breadcrumb section-nav].freeze
+  GENERATED = %w[breadcrumb section-nav social].freeze
+  SOCIALS = File.join(ROOT, 'layout', 'socials.yml')
   HIERARCHY = File.join(ROOT, 'layout', 'site-nav.yml')
 
   module_function
@@ -36,6 +39,16 @@ module ApplyLayout
     File.read(File.join(PARTIALS, "#{name}.html"), encoding: 'UTF-8')
   end
 
+  # Local stylesheet and script URLs in the head get ?v=<content hash> so a browser or CDN holding an older copy
+  # (Netlify serves assets with max-age=14400) fetches the new file as soon as the page's HTML changes.
+  def version_assets(html)
+    html.gsub(%r{(href|src)="(assets/[^"?]+\.(?:css|js))"}) do
+      attr = Regexp.last_match(1)
+      path = Regexp.last_match(2)
+      %(#{attr}="#{path}?v=#{Digest::SHA256.file(File.join(ROOT, path)).hexdigest[0, 10]}")
+    end
+  end
+
   def hierarchy
     @hierarchy ||= YAML.safe_load_file(HIERARCHY)
   end
@@ -44,6 +57,27 @@ module ApplyLayout
   def section_for(basename)
     hierarchy['sections'].find do |sec|
       sec['page'] == basename || sec['children'].any? { |c| c['page'] == basename }
+    end
+  end
+
+  def socials
+    @socials ||= YAML.safe_load_file(SOCIALS)
+  end
+
+  # Header variant: icon-only links with a Bootstrap tooltip ("Platform: handle") and a full accessible name.
+  # List variant (Contacts page): icon plus visible platform and handle, so no tooltip is needed.
+  def social_links(variant)
+    if variant == :header
+      items = socials.map do |a|
+        label = "#{a['platform']}: #{CGI.escapeHTML(a['handle'])}"
+        %(    <li><a class="social-link" href="#{a['url']}" target="_blank" rel="noopener noreferrer" data-bs-toggle="tooltip" data-bs-placement="bottom" title="#{label}" aria-label="#{label} (opens in a new tab)"><i class="fa-brands #{a['icon']}" aria-hidden="true"></i></a></li>\n)
+      end
+      %(<nav class="social-links" aria-label="Foray NL on social media">\n  <ul>\n#{items.join}  </ul>\n</nav>\n)
+    else
+      items = socials.map do |a|
+        %(  <li><a href="#{a['url']}" target="_blank" rel="noopener noreferrer"><i class="fa-brands #{a['icon']}" aria-hidden="true"></i> <span class="social-platform">#{a['platform']}</span> <span class="social-handle">#{CGI.escapeHTML(a['handle'])}</span><span class="visually-hidden"> (opens in a new tab)</span></a></li>\n)
+      end
+      %(<ul class="social-list">\n#{items.join}</ul>\n)
     end
   end
 
@@ -88,7 +122,9 @@ module ApplyLayout
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)
         body = partial(name)
+        body = body.gsub('{{social-links}}') { social_links(:header).lines.map { |l| "  #{l}" }.join.lstrip } if name == 'header'
         body = mark_active(body, File.basename(page_path)) if name == 'nav'
+        body = version_assets(body) if name == 'head'
         lines = body.lines.map { |l| l.strip.empty? ? l : "#{indent}#{l}" }.join
         "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
       end
@@ -99,7 +135,7 @@ module ApplyLayout
     GENERATED.reduce(source) do |text, name|
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)
-        body = name == 'breadcrumb' ? breadcrumb(basename) : section_nav(basename)
+        body = { 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list) }.fetch(name)
         lines = body.lines.map { |l| "#{indent}#{l}" }.join
         "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
       end

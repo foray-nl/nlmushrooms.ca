@@ -1,0 +1,6 @@
+# Foray NL's official social accounts. Rendered into the header ({{social-links}} in layout/partials/header.html)
+# and into the <!-- layout:social --> region on the Contacts page by scripts/apply_layout.rb.
+# icon = Font Awesome Free brand class (assets/vendor/fontawesome subset; add a glyph there before adding an account here).
+- { platform: Facebook,  icon: fa-facebook,  handle: ForayNL,   url: "https://www.facebook.com/ForayNL" }
+- { platform: Instagram, icon: fa-instagram, handle: "@foraynl", url: "https://www.instagram.com/foraynl/" }
+- { platform: Flickr,    icon: fa-flickr,    handle: foray_nl,   url: "https://www.flickr.com/photos/foray_nl/" }
