@@ -5,7 +5,7 @@ Static website for the Newfoundland and Labrador Mycological Society.
 ## Repository Layout
 - `index.html` and other `*.html` files: static pages for the site.
 - `images/`, `articles/`, `foray_reports/`, `species_lists/`, `science/`: content directories referenced by the pages.
-- `sitemap.rb`: script to generate `sitemap.xml` and `sitemap.txt`.
+- `sitemap.rb`: script to generate `sitemap.xml` (HTML pages and PDFs, canonical URLs).
 - `spec/`: RSpec tests for basic navigation and membership pages.
 
 ## Serving Locally
@@ -18,7 +18,7 @@ ruby -run -e httpd . -p 8000
 Then open <http://localhost:8000/> in a browser.
 
 ## Sitemap Generation
-Regenerate `sitemap.xml` and `sitemap.txt` after making changes to the site:
+Regenerate `sitemap.xml` after making changes to the site:
 
 ```bash
 ruby sitemap.rb

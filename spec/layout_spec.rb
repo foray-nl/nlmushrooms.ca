@@ -203,4 +203,42 @@ RSpec.describe ApplyLayout do
       expect(out).to include('href="https://nlmushrooms.ca/"')
     end
   end
+
+  describe 'Open Graph and Twitter tags' do
+    def jpeg_size(path)
+      data = File.binread(path)
+      i = 2
+      while i < data.size
+        marker = data.getbyte(i + 1)
+        len = data[i + 2, 2].unpack1('n')
+        return data[i + 5, 4].unpack('nn').reverse if (0xC0..0xC3).cover?(marker)
+
+        i += 2 + len
+      end
+    end
+
+    it 'gives every registered page a complete, consistent og:/twitter: block with an existing 1200x630 image' do
+      described_class.registry.each do |p|
+        out = described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", p['file'])
+        tag = ->(k) { CGI.unescapeHTML(out[/<meta property="#{k}" content="([^"]*)"/, 1].to_s) }
+        expect(tag['og:title']).to eq(described_class.page_title(p['file']))
+        expect(tag['og:description']).to eq(p['description'])
+        expect(tag['og:url']).to eq(described_class.canonical_url(p['file']))
+        expect(tag['og:site_name']).to eq(described_class.site['name'])
+        expect(tag['og:locale']).to eq('en_CA')
+        expect(tag['og:image:alt']).not_to be_empty
+        expect(out).to include('<meta name="twitter:card" content="summary_large_image">')
+        image = tag['og:image']
+        expect(image).to start_with('https://nlmushrooms.ca/images/share/')
+        file = File.join(described_class::ROOT, image.sub('https://nlmushrooms.ca/', ''))
+        expect(File).to exist(file)
+        expect(jpeg_size(file)).to eq([1200, 630])
+      end
+    end
+
+    it 'uses the poster as the share image on the foray pages and the logo elsewhere' do
+      expect(described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", 'foray_2026.html')).to include('images/share/foray-2026.jpg')
+      expect(described_class.render("<!-- layout:meta -->\n<!-- /layout:meta -->\n", 'contacts.html')).to include('images/share/default.jpg')
+    end
+  end
 end
