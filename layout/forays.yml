@@ -1,0 +1,201 @@
+# Every foray, newest first. Drives the Past Forays directory (past_forays.html), the report list
+# (foray_reports_all.html), Event JSON-LD on forays that have their own page, and the card images.
+# Sources are the foray reports and Omphalina issues in this repository; `note` records anything that needs a human eye.
+#
+# year, name, venue (optional), area (region shown on the card), start/end (ISO dates; end may be omitted when only the
+# start is confirmed), status (held, cancelled), page (the foray's own page), report (PDF path, omit when none online),
+# art (how scripts/foray_card_images.py builds images/forays/<year>.jpg: a PDF page or an image file), art_alt.
+- year: 2026
+  name: Foray 2026
+  venue: Camp Starrigan
+  area: Bonavista Peninsula, near Musgravetown
+  start: 2026-10-02
+  end: 2026-10-04
+  page: foray_2026.html
+  art: { file: images/Foray-2026-Poster.png }
+  art_alt: Foray 2026 poster
+- year: 2025
+  name: Foray 2025
+  venue: Pinchgut Lake
+  area: Western Newfoundland, south of Corner Brook
+  start: 2025-09-26
+  end: 2025-09-28
+  page: foray_2025.html
+  art: { file: images/Foray-2025-Poster.png }
+  art_alt: Foray 2025 poster
+- year: 2024
+  name: Foray 2024
+  venue: Salmonier Nature Park
+  area: Avalon Peninsula
+  start: 2024-10-04
+  end: 2024-10-06
+  page: foray_2024.html
+  art: { file: images/foray2024_poster.png }
+  art_alt: Foray 2024 poster
+- year: 2023
+  name: Foray 2023
+  venue: Max Simms Lion's Camp, Bishop's Falls
+  area: Central Newfoundland
+  start: 2023-09-29
+  end: 2023-10-01
+  page: foray_2023.html
+- year: 2022
+  name: Foray 2022
+  area: Central Newfoundland
+  start: 2022-09-23
+  end: 2022-09-25
+  note: "Venue not found in the repository (Omphalina XIII No 2 back cover says 'Return of the Foray, Central Newfoundland')."
+  art: { pdf: "omphaline/Omphalina_XIII_No2_2022-Sept (2).pdf", page: 42 }
+  art_alt: "Return of the Foray poster, September 23-25, 2022, Central Newfoundland"
+- year: 2020
+  name: Foray 2020
+  venue: Lion Max Simm's Memorial Camp, Bishop's Falls
+  area: Central Newfoundland
+  start: 2020-10-02
+  end: 2020-10-04
+  status: cancelled
+  blurb: The online eForay took the place of the in-person foray.
+  report: "omphaline/Foray Report 2019 and eForay 2020.pdf"
+  note: In-person foray cancelled; replaced by the online eForay (digital events), reported in the same PDF as 2019.
+  art: { pdf: omphaline/Omphalina-XI-1.pdf, page: 28 }
+  art_alt: Foray 2020 announcement poster
+- year: 2019
+  name: Foray 2019
+  venue: Burry Heights Camp
+  area: Avalon Peninsula
+  start: 2019-09-13
+  end: 2019-09-15
+  report: "omphaline/Foray Report 2019 and eForay 2020.pdf"
+  note: "foray_reports_all.html labelled this '2019 & Central NL'; the report covers the Avalon foray (Mycoblitz at Bowring Park) and the 2020 eForay."
+  art: { pdf: "omphaline/Foray Report 2019 and eForay 2020.pdf", page: 1 }
+  art_alt: "Cover of the report on the 2019 and 2020 forays"
+- year: 2018
+  name: Foray 2018
+  venue: Burry Heights
+  area: Avalon Peninsula
+  start: 2018-09-28
+  end: 2018-09-30
+  report: omphaline/Omphalina IX 9.pdf
+  art: { pdf: omphaline/Omphalina IX 9.pdf, page: 1 }
+  art_alt: "Cover of the 2018 foray report (Omphalina)"
+- year: 2017
+  name: Foray 2017
+  area: Corner Brook and the Humber Valley
+  start: 2017-08-25
+  end: 2017-08-27
+  report: omphaline/O-VIII-7.pdf
+  art: { pdf: omphaline/O-VIII-7.pdf, page: 1 }
+  art_alt: "Cover of the 2017 foray report (Omphalina)"
+- year: 2016
+  name: Foray 2016
+  area: Happy Valley-Goose Bay, Labrador
+  start: 2016-09-09
+  end: 2016-09-11
+  report: omphaline/O-VlI-8.pdf
+  art: { pdf: omphaline/O-VlI-8.pdf, page: 1 }
+  art_alt: "Cover of the 2016 foray report (Omphalina)"
+- year: 2015
+  name: Foray 2015
+  area: Gros Morne National Park
+  start: 2015-09-25
+  end: 2015-09-27
+  report: omphaline/O-Vl-7.pdf
+  art: { pdf: omphaline/O-Vl-7.pdf, page: 1 }
+  art_alt: "Cover of the 2015 foray report (Omphalina)"
+- year: 2014
+  name: Foray 2014
+  area: Gros Morne National Park
+  start: 2014-09-12
+  end: 2014-09-14
+  report: omphaline/O-V-10.pdf
+  note: "Omphalina V-10's cover reads 'Foray 2015 Report' but it reports the 2014 foray. Omphalina IV-10 had announced Sept 19-21, 2014; the 2014 program gives Sept 12-14."
+  art: { pdf: omphaline/O-V-10.pdf, page: 1 }
+  art_alt: "Cover of the 2014 foray report (Omphalina)"
+- year: 2013
+  name: Foray 2013
+  area: Fogo Island
+  start: 2013-09-06
+  end: 2013-09-08
+  report: omphaline/O-IV-10.pdf
+  art: { pdf: omphaline/O-IV-10.pdf, page: 1 }
+  art_alt: "Cover of the 2013 foray report (Omphalina)"
+- year: 2012
+  name: Foray 2012
+  venue: Terra Nova Hospitality Home
+  area: Terra Nova National Park
+  start: 2012-09-28
+  end: 2012-09-30
+  report: omphaline/O-III-12.pdf
+  art: { pdf: omphaline/O-III-12.pdf, page: 1 }
+  art_alt: "Cover of the 2012 foray report (Omphalina)"
+- year: 2011
+  name: Foray 2011
+  area: Terra Nova National Park
+  start: 2011-09-09
+  end: 2011-09-11
+  note: No report PDF is listed for 2011 on the old reports page.
+- year: 2010
+  name: Foray 2010
+  area: Great Northern Peninsula
+  start: 2010-09-10
+  note: Only the start date (the opening of the foray, from Omphalina Vol I) is confirmed.
+- year: 2009
+  name: Foray 2009
+  area: Central Newfoundland
+  note: Dates and venue not found in the repository.
+- year: 2008
+  name: Foray 2008
+  venue: Max Simm's Camp
+  area: Central Newfoundland
+  start: 2008-09-12
+  end: 2008-09-14
+  report: foray_reports/2008_foray_report.pdf
+  note: The report file is listed on the old page but was never in the repository (see manifests/missing-files.yml).
+- year: 2007
+  name: Foray 2007
+  venue: Burry Heights
+  area: Avalon Peninsula
+  start: 2007-09-28
+  end: 2007-09-30
+  report: foray_reports/2007_foray_report.pdf
+  blurb: The Linnaeus Tercentenary Foray.
+  art: { pdf: foray_reports/2007_foray_report.pdf, page: 1 }
+  art_alt: "Cover of the 2007 foray report"
+- year: 2006
+  name: Foray 2006
+  venue: Lavrock Centre
+  area: Avalon Peninsula
+  start: 2006-09-15
+  end: 2006-09-17
+  report: foray_reports/2006_foray_report.pdf
+  art: { pdf: foray_reports/2006_foray_report.pdf, page: 1 }
+  art_alt: "Cover of the 2006 foray report"
+- year: 2005
+  name: Foray 2005
+  venue: Killdevil Lodge
+  area: Gros Morne National Park
+  start: 2005-09-02
+  end: 2005-09-05
+  report: omphaline/2005_foray_report.pdf
+  blurb: A second foray followed in the Labrador Straits, September 6-9.
+  note: Two forays in 2005 (Gros Morne, then Labrador Straits).
+  art: { pdf: omphaline/2005_foray_report.pdf, page: 1 }
+  art_alt: "Cover of the 2005 foray report"
+- year: 2004
+  name: Foray 2004
+  venue: Killdevil Lodge
+  area: Gros Morne National Park
+  start: 2004-09-17
+  end: 2004-09-19
+  report: foray_reports/2004_foray_report.pdf
+  art: { pdf: foray_reports/2004_foray_report.pdf, page: 1 }
+  art_alt: "Cover of the 2004 foray report"
+- year: 2003
+  name: Foray 2003
+  venue: Killdevil Lodge
+  area: Gros Morne National Park
+  start: 2003-10-03
+  end: 2003-10-05
+  report: foray_reports/2003_Foray_Report.pdf
+  art: { pdf: foray_reports/2003_Foray_Report.pdf, page: 1 }
+  art_alt: "Cover of the 2003 foray report"

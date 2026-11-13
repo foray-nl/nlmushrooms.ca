@@ -36,21 +36,32 @@ pages:
     image: images/share/foray-2026.jpg
     image_alt: "Foray 2026 poster: Foray NL, Bonavista Peninsula, October 2-4, with hikers on a coastal headland"
     description: "Foray 2026: the annual Newfoundland mushroom and lichen foray at Camp Starrigan near Musgravetown on the Bonavista Peninsula, October 2-4, 2026."
+  - file: past_forays.html
+    name: Past Forays
+    parent: index.html
+    subnav: true
+    schema_type: CollectionPage
+    description: Every Foray Newfoundland and Labrador foray since 2003 with dates, places and posters, and links to each year's page and report.
+  - file: foray_reports_all.html
+    name: 2003-Present
+    title: Foray Reports 2003-Present
+    parent: past_forays.html
+    description: Download every Foray Newfoundland and Labrador annual foray report, 2003 to the present, with species lists by trail and commentary.
   - file: foray_2025.html
     name: Foray 2025
-    parent: index.html
+    parent: past_forays.html
     image: images/share/foray-2025.jpg
     image_alt: "Foray 2025 poster for the Pinchgut Lake foray near Corner Brook"
     description: "Foray 2025: the annual Newfoundland mushroom and lichen foray at Pinchgut Lake south of Corner Brook, September 26-28, 2025."
   - file: foray_2024.html
     name: Foray 2024
-    parent: index.html
+    parent: past_forays.html
     image: images/share/foray-2024.jpg
     image_alt: "Foray 2024 poster for the Salmonier Nature Park foray"
     description: "Foray 2024: the annual Newfoundland mushroom and lichen foray at Salmonier Nature Park on the Avalon Peninsula, October 4-6, 2024."
   - file: foray_2023.html
     name: Foray 2023
-    parent: index.html
+    parent: past_forays.html
     description: "Foray 2023: the annual Newfoundland mushroom and lichen foray at Max Simms Lion's Camp, Bishop's Falls, September 29 to October 1, 2023."
   - file: membership.html
     name: Membership

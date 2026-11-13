@@ -100,3 +100,7 @@ Every PR that changes how a page looks shows the page before and after, desktop 
 `ruby scripts/pr_screenshots.rb table --name <pr-name> --sha <commit>` prints the markdown table with URLs pinned
 to that commit, so the images survive branch deletion. A `--before` directory already under `docs/screenshots/`
 (for example the committed baseline) is referenced in place.
+
+## Past Forays directory
+
+`layout/forays.yml` lists every foray (year, venue, area, dates, status, report PDF, card art). `scripts/apply_layout.rb` turns it into the card directory on `past_forays.html` (newest first), the report list on `foray_reports_all.html` and Event JSON-LD on any foray with its own `page`. Card images in `images/forays/` are built by `python3 scripts/foray_card_images.py [year ...]` from the `art` source of each entry. `note` fields are for reviewers and are never rendered. `/foray_reports(.html)` redirects (301) to `/past_forays.html`.

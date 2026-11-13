@@ -287,3 +287,16 @@ body > .page-breadcrumb + main { margin-top: 0.5rem; }
   .subnav .nav::before { display: none; }
   .subnav .nav { justify-content: center; }
 }
+
+/* Past Forays directory and report list */
+.foray-directory { list-style: none; margin: 1rem 0; padding: 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.foray-card { display: flex; flex-direction: column; border: 1px solid #d9d9d9; border-radius: 6px; background: #fff; overflow: hidden; }
+.foray-card img { display: block; width: 100%; height: auto; aspect-ratio: 420 / 544; object-fit: cover; object-position: top; background: #f5f5f5; }
+.foray-card-body { padding: 0.75rem 1rem 1rem; }
+.foray-card h3 { margin: 0 0 0.4rem; font-size: 1.15em; }
+.foray-card p { margin: 0 0 0.4rem; }
+.foray-place { color: #243542; }
+.foray-dates { font-weight: 600; }
+.foray-status { font-style: italic; }
+.report-list { list-style: none; margin: 1rem 0; padding: 0; }
+.report-list li { margin: 0 0 0.9rem; }
