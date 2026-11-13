@@ -47,6 +47,11 @@
   note: "Venue not found in the repository (Omphalina XIII No 2 back cover says 'Return of the Foray, Central Newfoundland')."
   art: { pdf: "omphaline/Omphalina_XIII_No2_2022-Sept (2).pdf", page: 42 }
   art_alt: "Return of the Foray poster, September 23-25, 2022, Central Newfoundland"
+- year: 2021
+  name: Foray 2021
+  status: not_held
+  blurb: Not held because of the COVID-19 pandemic.
+  note: "Rob believes the 2021 foray did not happen because of COVID; confirm."
 - year: 2020
   name: Foray 2020
   venue: Lion Max Simm's Memorial Camp, Bishop's Falls
@@ -54,6 +59,7 @@
   start: 2020-10-02
   end: 2020-10-04
   status: cancelled
+  report_image_year: 2019
   blurb: The online eForay took the place of the in-person foray.
   report: "omphaline/Foray Report 2019 and eForay 2020.pdf"
   note: In-person foray cancelled; replaced by the online eForay (digital events), reported in the same PDF as 2019.

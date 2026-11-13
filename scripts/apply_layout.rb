@@ -209,24 +209,38 @@ module ApplyLayout
     foray['report'].start_with?('omphaline/') ? 'Report (PDF, in an Omphalina issue)' : 'Report (PDF)'
   end
 
+  DEFAULT_CARD = { 'file' => 'default', 'alt' => 'Foray Newfoundland and Labrador logo: a chanterelle mushroom beside the words Foray Newfoundland and Labrador' }.freeze
+  STATUS_TEXT = { 'cancelled' => 'In-person foray cancelled', 'not_held' => 'Not held' }.freeze
+
+  # [file stem, alt] of a foray's card image; the default banner card when it has no art.
+  def card_image(foray)
+    year = foray['report_image_year'] || foray['year']
+    source = forays.find { |f| f['year'] == year }
+    return [DEFAULT_CARD['file'], DEFAULT_CARD['alt']] unless source['art'] && File.exist?(File.join(ROOT, 'images', 'forays', "#{year}.jpg"))
+
+    [year.to_s, source['art_alt'].to_s]
+  end
+
+  def pdf_href(path) = CGI.escapeHTML(path).gsub(' ', '%20')
+
   # Past Forays directory: one card per foray, newest first, with poster or report cover, dates, place and links.
   def foray_directory
     cards = forays.map do |f|
-      img = File.exist?(File.join(ROOT, 'images', 'forays', "#{f['year']}.jpg")) ? f['year'] : nil
+      img, alt = card_image(f.merge('report_image_year' => nil))
       out = +%(  <li class="foray-card" id="foray-#{f['year']}">\n)
-      out << %(    <img src="images/forays/#{img}.jpg" alt="#{CGI.escapeHTML(f['art_alt'].to_s)}" width="420" height="544" decoding="async">\n) if img
+      out << %(    <img src="images/forays/#{img}.jpg" alt="#{CGI.escapeHTML(alt)}" width="420" height="544" decoding="async">\n)
       out << %(    <div class="foray-card-body">\n)
       title = CGI.escapeHTML(f['name'])
       title = %(<a href="#{f['page']}">#{title}</a>) if f['page']
       out << %(      <h3>#{title}</h3>\n)
-      out << %(      <p class="foray-status">Held online only (in-person foray cancelled)</p>\n) if f['status'] == 'cancelled'
+      out << %(      <p class="foray-status">#{STATUS_TEXT[f['status']]}</p>\n) if STATUS_TEXT[f['status']]
       place = [f['venue'], f['area']].compact.join(', ')
       out << %(      <p class="foray-place">#{CGI.escapeHTML(place)}</p>\n) unless place.empty?
       dates = date_text(f)
       out << %(      <p class="foray-dates"><time datetime="#{date_attr(f)}">#{dates}</time></p>\n) if dates
       out << %(      <p>#{CGI.escapeHTML(f['blurb'])}</p>\n) if f['blurb']
       if f['report'] && report_online?(f)
-        out << %(      <p class="foray-links"><a href="#{CGI.escapeHTML(f['report']).gsub(' ', '%20')}">#{report_label(f)}</a></p>\n)
+        out << %(      <p class="foray-links"><a href="#{pdf_href(f['report'])}">#{report_label(f)}</a></p>\n)
       elsif f['report']
         out << %(      <p class="foray-links">Report not currently online</p>\n)
       end
@@ -235,16 +249,21 @@ module ApplyLayout
     %(<ul class="foray-directory">\n#{cards.join}</ul>\n)
   end
 
-  # Every foray report available for download, newest first.
+  # Every foray report available for download, newest first, as media cards: text left, report cover right.
   def report_list
     rows = forays.select { |f| f['report'] }.map do |f|
+      img, alt = card_image(f)
       place = [f['venue'], f['area']].compact.join(', ')
       link = if report_online?(f)
-               %(<a href="#{CGI.escapeHTML(f['report']).gsub(' ', '%20')}">#{report_label(f)}</a>)
+               %(<a class="stretched-link" href="#{pdf_href(f['report'])}">#{report_label(f)}</a>)
              else
                'Not currently online'
              end
-      %(  <li><strong>#{f['year']}</strong> #{CGI.escapeHTML(place)}<br>#{link}</li>\n)
+      out = +%(  <li class="media-card">\n    <div class="media-card-body">\n)
+      out << %(      <h3>#{f['year']}</h3>\n)
+      out << %(      <p>#{CGI.escapeHTML(place)}</p>\n) unless place.empty?
+      out << %(      <p class="media-card-link">#{link}</p>\n    </div>\n)
+      out << %(    <img class="media-card-img" src="images/forays/#{img}.jpg" alt="#{CGI.escapeHTML(alt)}" width="420" height="544" decoding="async">\n  </li>\n)
     end
     %(<ul class="report-list">\n#{rows.join}</ul>\n)
   end
@@ -311,7 +330,7 @@ module ApplyLayout
 
     title_cls = sec['file'] == basename ? 'subnav-title active' : 'subnav-title'
     title_cur = sec['file'] == basename ? ' aria-current="page"' : ''
-    items = children(sec['file']).map do |c|
+    items = children(sec['file']).reject { |c| c['subnav_hidden'] }.map do |c|
       active = c['file'] == basename
       cls = active ? 'nav-link active' : 'nav-link'
       cur = active ? ' aria-current="page"' : ''

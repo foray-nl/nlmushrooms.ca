@@ -28,9 +28,23 @@ def render(art, tmp):
     return Image.open(png).convert('RGB')
 
 
+def default_card():
+    # Same shape as the other cards: the header banner centred on the banner's own background colour.
+    banner = Image.open(os.path.join(ROOT, '_wp_generated', 'wp1da48039_05_06.jpg')).convert('RGB')
+    height = round(WIDTH * 544 / 420)
+    card = Image.new('RGB', (WIDTH, height), banner.getpixel((5, 5)))
+    scaled = banner.resize((WIDTH, round(banner.height * WIDTH / banner.width)), Image.LANCZOS)
+    card.paste(scaled, (0, (height - scaled.height) // 2))
+    path = os.path.join(OUT, 'default.jpg')
+    card.save(path, 'JPEG', quality=80, optimize=True)
+    print(f"default: {card.size[0]}x{card.size[1]}")
+
+
 def main(years):
     forays = yaml.safe_load(open(os.path.join(ROOT, 'layout', 'forays.yml')))
     os.makedirs(OUT, exist_ok=True)
+    if not years:
+        default_card()
     for f in forays:
         if 'art' not in f or (years and str(f['year']) not in years):
             continue
