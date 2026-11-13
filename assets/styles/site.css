@@ -307,3 +307,8 @@ body > .page-breadcrumb + main { margin-top: 0.5rem; }
 .media-card p { margin: 0 0 0.4rem; }
 .media-card-img { flex: 0 0 110px; width: 110px; height: auto; align-self: stretch; object-fit: cover; object-position: top; background: #f5f5f5; }
 .stretched-link::after { content: ""; position: absolute; inset: 0; }
+/* Resources pages: reference lists, group banners, small logos */
+.citations li { margin: 0 0 1rem; }
+.group-banners { list-style: none; margin: 0; padding: 0; }
+.group-banners li { margin: 0 0 1.25rem; }
+.group-banners img, .resource-logo { max-width: 100%; height: auto; }

@@ -74,7 +74,30 @@ pages:
   - file: resources.html
     name: Resources
     parent: index.html
+    subnav: true
     description: Links to mushroom and lichen publications, photo-sharing groups on Facebook and Flickr, and mycology websites useful to Foray NL members.
+  - file: articles_fungi_magazine.html
+    name: Fungi
+    parent: resources.html
+    title: Fungi Magazine
+    description: Articles by Foray Newfoundland and Labrador members published in Fungi Magazine, with links to the PDFs where available.
+  - file: mycophyle_articles.html
+    name: Mycophile
+    parent: resources.html
+    description: Mycophile articles by Foray Newfoundland and Labrador members, from the bimonthly newsletter of the North American Mycological Association.
+  - file: facebook_links.html
+    name: Face Book
+    parent: resources.html
+    description: Facebook groups with a mycology theme that are of use to Foray Newfoundland and Labrador members, from regional to international.
+  - file: osprey.html
+    name: Osprey
+    parent: resources.html
+    title: Osprey Magazine
+    description: Articles by Foray Newfoundland and Labrador members published in Osprey, the magazine of Nature Newfoundland and Labrador.
+  - file: fungal_websites.html
+    name: Fungal Websites
+    parent: resources.html
+    description: Websites about mushrooms and lichens chosen for Foray NL members, including societies, general information, dictionaries, magazines and book reviews.
   - file: about_us.html
     name: About Us
     parent: index.html
