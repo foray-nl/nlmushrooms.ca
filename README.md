@@ -43,6 +43,9 @@ ruby scripts/compare_visual.rb   # tmp/visual/compare/index.html and tmp/visual/
 ```
 Output lives in `tmp/` (gitignored). Google Analytics and web fonts are blocked during capture so runs are repeatable.
 
+## Missing files manifest
+`manifests/missing-files.yml` lists files that pages reference but the repository does not contain (to be located and uploaded, or decided on link by link). `spec/missing_files_spec.rb` fails when a page references a missing path that is not listed, or when an entry's status is out of date. `ruby scripts/missing_files_report.rb` prints what still needs to be located. PDFs go in through Git LFS.
+
 ## Contributing
 1. Fork the repository and create a feature branch.
 2. Make your changes and update `sitemap.xml` using `ruby sitemap.rb`.

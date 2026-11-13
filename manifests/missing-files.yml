@@ -1,0 +1,60 @@
+# Files that pages reference but the repository does not contain.
+#
+# Each entry is a file (or page) to be located and uploaded, or a link to be decided on in the interactive link
+# walk. Links to listed targets stay as they are until the entry is resolved. Keep this file in the same PR as any
+# change that adds, removes or repoints a reference to one of these paths.
+#
+# status:
+#   missing     referenced, not in the repo, still to be located
+#   located     found somewhere (see location), not yet added to the repo
+#   uploaded    added to the repo (PDFs go through Git LFS), entry can be deleted in the next cleanup
+#   superseded  no upload needed; the reference is going away or has a replacement (see notes)
+#
+# spec/missing_files_spec.rb fails when a page references a missing path that is not listed here, when a
+# "missing" entry is no longer missing, or when an "uploaded" entry is absent.
+
+# Pages that are not part of the site and are only checked for the cleanup of their own references.
+ignore_sources:
+  - path: omphaline/page40.html
+    reason: Orphan copy of page40.html with a wrong relative base (about 50 dead references). Slated for deletion in the link walk.
+
+files:
+  - path: Omphalina_XIV_No2.pdf
+    kind: file
+    referenced_by: [current issue.html]
+    description: Omphalina Volume XIV, No. 2 (linked from the "current issue" page as a cover thumbnail).
+    possible_locations: [Foray NL board or editor, Nextcloud Foray NL folder, Omphalina issue mailing list]
+    status: missing
+    notes: Never in the repository (checked git history). The newer issue PDFs live in omphaline/.
+
+  - path: foray_reports/2008_foray_report.pdf
+    kind: file
+    referenced_by: [foray_reports_all.html]
+    description: Foray 2008 report (linked from the all-reports page as a thumbnail).
+    possible_locations: [Foray NL board or past organizers, Nextcloud Foray NL folder, Omphalina issue covering the 2008 foray]
+    status: missing
+    notes: Never in the repository. foray_reports/ currently holds the 2003, 2004, 2006 and 2007 reports.
+
+  - path: omphaline/App1.pdf
+    kind: file
+    referenced_by: [submission_guidelines.html]
+    description: Appendix 1 to the Omphalina submission guidelines (clickable area on a scanned guidelines image).
+    possible_locations: [Foray NL board or Omphalina editor, original WebPlus site files]
+    status: missing
+    notes: Never in the repository. The area has no alt text, so it needs a decision (upload, or remove the hotspot).
+
+  - path: omphalina v6 2016.html
+    kind: page
+    referenced_by: [current issue.html, foray_reports_all.html, omphalina_2011_1.html, omphalina_2012_1.html, omphalina_2013_1.html, omphalina_2014.html, omphalina_2015_1.html, page40.html]
+    description: Nav flyout entry "Archive 2016" present on every legacy page's Omphalina menu. The page does not exist.
+    possible_locations: [page36.html is titled "Archive 2016" and is the likely target]
+    status: superseded
+    notes: Not an upload. Decide in the interactive link walk (repoint to page36.html or drop); it disappears with the nav rewrite.
+
+  - path: foray_information/Clothing_Supplies_and_Equipment2.pdf
+    kind: file
+    referenced_by: [foray_2023.html, foray_2024.html]
+    description: 2013 clothing, supplies and equipment guide. Only the 10 empty anchors (a link around a line break) still point at it.
+    possible_locations: ["closed PR #9, branch fix/pdf-files (raw blob)"]
+    status: superseded
+    notes: Visible links were repointed to Clothing-Supplies-Equipment-2025.pdf in PR #11. The empty anchors are removed in the foray 2023 to 2026 conversion.
