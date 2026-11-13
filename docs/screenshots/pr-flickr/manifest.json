@@ -1,0 +1,8 @@
+{
+  "pages": [
+    "flickr_image_index",
+    "flickr_voucher_images"
+  ],
+  "before_base": "docs/screenshots/baseline-0a1f1fa",
+  "after_base": "docs/screenshots/pr-flickr/after"
+}
