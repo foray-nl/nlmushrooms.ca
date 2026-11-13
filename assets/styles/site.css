@@ -313,3 +313,16 @@ body > .page-breadcrumb + main { margin-top: 0.5rem; }
 .group-banners li { margin: 0 0 1.25rem; }
 .group-banners img { max-width: 100%; height: auto; }
 .resource-logo { width: 56px; height: auto; }
+
+/* Omphalina: issue cover grid, current issue, submission guidelines */
+.issue-grid { list-style: none; margin: 1rem 0; padding: 0; display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+.issue-card a { display: block; text-decoration: none; text-align: center; }
+.issue-card img { display: block; width: 100%; height: auto; margin-bottom: 0.4rem; border: 1px solid #d9d9d9; border-radius: 4px; background: #f5f5f5; }
+.issue-card a:hover img, .issue-card a:focus-visible img { border-color: #ee722a; box-shadow: 0 2px 8px rgba(36, 53, 66, 0.2); }
+.issue-label { font-weight: 600; color: #243542; }
+.current-issue { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+.current-issue > div { flex: 1 1 320px; min-width: 0; }
+.current-issue img { display: block; width: 240px; max-width: 100%; height: auto; border: 1px solid #d9d9d9; border-radius: 4px; }
+.submission { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
+.submission > div { flex: 1 1 320px; min-width: 0; }
+.submission img { max-width: 100%; height: auto; }

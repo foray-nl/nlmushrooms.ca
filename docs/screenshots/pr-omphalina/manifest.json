@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "omphalina",
+    "current_issue",
+    "search",
+    "submission_guidelines",
+    "omphalina_2016",
+    "omphalina_2021",
+    "omphalina_2014"
+  ],
+  "before_base": "docs/screenshots/pr-omphalina/before",
+  "after_base": "docs/screenshots/pr-omphalina/after"
+}
