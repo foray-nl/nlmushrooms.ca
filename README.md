@@ -56,3 +56,19 @@ Output lives in `tmp/` (gitignored). Google Analytics and web fonts are blocked 
 1. Regenerate the sitemap and run the tests.
 2. Commit and push to the `main` branch.
 3. Copy the repository contents to the production web server (e.g., with `rsync` or `scp`).
+
+## Shared layout (header, nav, footer)
+
+The shared regions live in `layout/partials/` (`head`, `header`, `nav`, `footer`). A page opts in by wrapping a
+region in marker comments:
+
+```html
+<!-- layout:nav -->
+<!-- /layout:nav -->
+```
+
+`ruby scripts/apply_layout.rb` fills every marked region from the partial (the nav link for the page itself gets
+`class="active"`). `ruby scripts/apply_layout.rb --check` exits 1 if any page is out of date; `bundle exec rspec`
+runs the same check, so CI fails on drift. Edit the partial, never the marked region in a page. Pages stay plain
+static HTML, so Netlify serves them unchanged. Currently `foray_2025.html` and `foray_2026.html` use it; the legacy
+pages adopt it as they are converted.
