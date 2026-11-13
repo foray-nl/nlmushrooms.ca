@@ -1,0 +1,8 @@
+{
+  "pages": [
+    "past_forays",
+    "foray_reports_all"
+  ],
+  "before_base": "docs/screenshots/pr-32-past-forays/before",
+  "after_base": "docs/screenshots/pr-32-past-forays/after"
+}
