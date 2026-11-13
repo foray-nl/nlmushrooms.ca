@@ -51,5 +51,42 @@ RSpec.describe ApplyLayout do
       once = described_class.render(page, 'foray_2026.html')
       expect(described_class.render(once, 'foray_2026.html')).to eq(once)
     end
+
+  describe 'breadcrumb and section menu (layout/site-nav.yml)' do
+    let(:page) do
+      "<main>\n  <!-- layout:breadcrumb -->\n  x\n  <!-- /layout:breadcrumb -->\n  <!-- layout:section-nav -->\n  x\n  <!-- /layout:section-nav -->\n</main>\n"
+    end
+
+    it 'builds Home > Section > Page on a sub-page, with the last crumb as plain text' do
+      out = described_class.render(page, 'mission.html')
+      expect(out).to include('<li class="breadcrumb-item"><a href="index.html">Home</a></li>')
+      expect(out).to include('<li class="breadcrumb-item"><a href="about_us.html">About Us</a></li>')
+      expect(out).to include('<li class="breadcrumb-item active" aria-current="page">Mission</li>')
+    end
+
+    it 'stops at the section overview on the section page itself' do
+      out = described_class.render(page, 'about_us.html')
+      expect(out).to include('<li class="breadcrumb-item active" aria-current="page">About Us</li>')
+      expect(out).not_to include('mission.html</a></li>')
+    end
+
+    it 'lists the overview and every child and marks only the current page' do
+      out = described_class.render(page, 'board.html')
+      expect(out.scan('nav-link').size).to eq(6)
+      expect(out.scan('aria-current="page" href').size).to eq(1)
+      expect(out).to include('<a class="nav-link active" aria-current="page" href="board.html">Board</a>')
+    end
+
+    it 'renders both regions empty for a page outside every section' do
+      out = described_class.render(page, 'index.html')
+      expect(out).not_to include('breadcrumb-item')
+      expect(out).not_to include('nav-link')
+    end
+
+    it 'is idempotent' do
+      once = described_class.render(page, 'board.html')
+      expect(described_class.render(once, 'board.html')).to eq(once)
+    end
+  end
   end
 end

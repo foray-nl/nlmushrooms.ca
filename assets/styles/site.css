@@ -206,3 +206,17 @@ main.page a { color: #b8480f; }
   .history h3 { break-after: avoid; }
 }
 .history .source { margin-top: 1.5em; font-size: 0.9em; column-span: all; }
+
+/* Section menu and breadcrumb (about_us and its sub-pages) */
+main.with-section { max-width: 1000px; display: grid; grid-template-columns: 1fr; gap: 1rem 2rem; }
+main.with-section .breadcrumb { margin: 0; font-size: 0.95em; --bs-breadcrumb-divider-color: #243542; --bs-breadcrumb-item-active-color: #243542; }
+main.with-section .breadcrumb a { color: #b8480f; }
+.section-nav .nav-pills { flex-wrap: wrap; gap: 0.35rem; }
+.section-nav .nav-link { color: #243542; background: #f5f5f5; border: 1px solid #e2e2e2; padding: 0.4em 0.9em; }
+.section-nav .nav-link:hover, .section-nav .nav-link:focus { background: #fde2bd; color: #243542; outline: none; }
+.section-nav .nav-link.active { background: #243542; border-color: #243542; color: #fff; font-weight: 600; }
+@media (min-width: 992px) {
+  main.with-section { grid-template-columns: 14rem 1fr; align-items: start; }
+  main.with-section .page-breadcrumb { grid-column: 1 / -1; }
+  .section-nav .nav-pills { flex-direction: column; flex-wrap: nowrap; }
+}

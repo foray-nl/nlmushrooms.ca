@@ -9,16 +9,22 @@
 #   ...anything, replaced on every run...
 #   <!-- /layout:nav -->
 #
-# Regions: head (shared <link>s), header, nav, footer. Everything outside the markers is left alone.
+# Regions: head (shared <link>s), header, nav, footer, plus the generated breadcrumb and section-nav regions (built from
+# layout/site-nav.yml for pages listed there). Everything outside the markers is left alone.
 # In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
 #   ruby scripts/apply_layout.rb            rewrite every page that has markers
 #   ruby scripts/apply_layout.rb --check    exit 1 and list pages that differ (CI drift check); writes nothing
 #   ruby scripts/apply_layout.rb a.html     only the named pages
+require 'yaml'
+require 'cgi'
+
 module ApplyLayout
   ROOT = File.expand_path('..', __dir__)
   PARTIALS = File.join(ROOT, 'layout', 'partials')
   REGIONS = %w[head header nav footer].freeze
+  GENERATED = %w[breadcrumb section-nav].freeze
+  HIERARCHY = File.join(ROOT, 'layout', 'site-nav.yml')
 
   module_function
 
@@ -30,13 +36,68 @@ module ApplyLayout
     File.read(File.join(PARTIALS, "#{name}.html"), encoding: 'UTF-8')
   end
 
+  def hierarchy
+    @hierarchy ||= YAML.safe_load_file(HIERARCHY)
+  end
+
+  # The section a page belongs to (as overview or child), or nil.
+  def section_for(basename)
+    hierarchy['sections'].find do |sec|
+      sec['page'] == basename || sec['children'].any? { |c| c['page'] == basename }
+    end
+  end
+
+  def breadcrumb(basename)
+    sec = section_for(basename)
+    return '' unless sec
+
+    crumbs = [[hierarchy['home_title'] || 'Home', hierarchy['home']], [sec['title'], sec['page']]]
+    child = sec['children'].find { |c| c['page'] == basename }
+    crumbs << [child['title'], child['page']] if child
+    items = crumbs.each_with_index.map do |(title, href), i|
+      if i == crumbs.size - 1
+        %(    <li class="breadcrumb-item active" aria-current="page">#{CGI.escapeHTML(title)}</li>\n)
+      else
+        %(    <li class="breadcrumb-item"><a href="#{href}">#{CGI.escapeHTML(title)}</a></li>\n)
+      end
+    end
+    %(<nav class="page-breadcrumb" aria-label="breadcrumb">\n  <ol class="breadcrumb">\n#{items.join}  </ol>\n</nav>\n)
+  end
+
+  def section_nav(basename)
+    sec = section_for(basename)
+    return '' unless sec
+
+    links = [[sec['title'], sec['page']]] + sec['children'].map { |c| [c['title'], c['page']] }
+    items = links.map do |title, href|
+      active = href == basename
+      cls = active ? 'nav-link active' : 'nav-link'
+      cur = active ? ' aria-current="page"' : ''
+      %(    <li class="nav-item"><a class="#{cls}"#{cur} href="#{href}">#{CGI.escapeHTML(title)}</a></li>\n)
+    end
+    %(<nav class="section-nav" aria-label="#{CGI.escapeHTML(sec['title'])} section">\n  <ul class="nav nav-pills">\n#{items.join}  </ul>\n</nav>\n)
+  end
+
   def render(source, page_path)
+    basename = File.basename(page_path)
+    source = render_generated(source, basename)
     REGIONS.reduce(source) do |text, name|
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)
         body = partial(name)
         body = mark_active(body, File.basename(page_path)) if name == 'nav'
         lines = body.lines.map { |l| l.strip.empty? ? l : "#{indent}#{l}" }.join
+        "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
+      end
+    end
+  end
+
+  def render_generated(source, basename)
+    GENERATED.reduce(source) do |text, name|
+      text.gsub(region_pattern(name)) do
+        indent = Regexp.last_match(1)
+        body = name == 'breadcrumb' ? breadcrumb(basename) : section_nav(basename)
+        lines = body.lines.map { |l| "#{indent}#{l}" }.join
         "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
       end
     end
