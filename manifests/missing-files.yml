@@ -43,14 +43,6 @@ files:
     status: missing
     notes: Never in the repository. The area has no alt text, so it needs a decision (upload, or remove the hotspot).
 
-  - path: omphalina v6 2016.html
-    kind: page
-    referenced_by: [current issue.html, foray_reports_all.html, omphalina_2011_1.html, omphalina_2012_1.html, omphalina_2013_1.html, omphalina_2014.html, omphalina_2015_1.html, page40.html]
-    description: Nav flyout entry "Archive 2016" present on every legacy page's Omphalina menu. The page does not exist.
-    possible_locations: [page36.html is titled "Archive 2016" and is the likely target]
-    status: superseded
-    notes: Not an upload. Decide in the interactive link walk (repoint to page36.html or drop); it disappears with the nav rewrite.
-
   - path: foray_information/Clothing_Supplies_and_Equipment2.pdf
     kind: file
     referenced_by: [foray_2023.html, foray_2024.html]
