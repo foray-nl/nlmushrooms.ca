@@ -42,9 +42,28 @@ header img {
 .navbar-toggler:focus {
   box-shadow: 0 0 0 0.2rem #ee722a;
 }
+/* Dropdown sub-menus */
+.navbar .dropdown-menu {
+  --bs-dropdown-bg: #243542;
+  --bs-dropdown-border-color: #3a4f60;
+  --bs-dropdown-link-color: #fff;
+  --bs-dropdown-link-hover-color: #fff;
+  --bs-dropdown-link-hover-bg: #ee722a;
+  --bs-dropdown-link-active-color: #fff;
+  --bs-dropdown-link-active-bg: #ee722a;
+  --bs-dropdown-divider-bg: #3a4f60;
+  max-height: 65vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  text-align: center;
+}
+.navbar .dropdown-item { font-weight: 500; white-space: normal; }
+.navbar .dropdown-toggle { cursor: pointer; }
+.navbar .nav-item { text-align: center; }
 @media (min-width: 992px) {
   .navbar .navbar-nav { gap: 0.25rem; }
   .navbar-expand-lg { justify-content: center; }
+  .navbar .dropdown-menu { text-align: left; min-width: 14rem; width: max-content; max-width: 22rem; }
 }
 @media (min-width: 1200px) {
   .navbar .navbar-nav { gap: 0.5rem; }

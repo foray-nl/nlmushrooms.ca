@@ -47,18 +47,18 @@ RSpec.describe 'Main navigation', :js, type: :feature do
         resize(430, mobile: true)
         visit_page(path)
         expect(page).to have_css('.navbar-toggler', visible: :visible)
-        expect(page).to have_no_link('Foray Reports')
+        expect(page).to have_no_link('Membership')
         expect(page).to have_css('.navbar-toggler[aria-expanded="false"]')
         shot("#{PageCapture.slug(path)}-mobile-collapsed")
 
         find('.navbar-toggler').click
-        expect(page).to have_link('Foray Reports')
+        expect(page).to have_link('Membership')
         expect(page).to have_css('.navbar-toggler[aria-expanded="true"]')
         expect(page).to have_css('#siteNav.collapse.show:not(.collapsing)') # Bootstrap ignores clicks mid-transition
         shot("#{PageCapture.slug(path)}-mobile-expanded")
 
         find('.navbar-toggler').click
-        expect(page).to have_no_link('Foray Reports')
+        expect(page).to have_no_link('Membership')
       end
 
       it 'does not scroll sideways on a phone, collapsed or expanded' do
@@ -70,12 +70,35 @@ RSpec.describe 'Main navigation', :js, type: :feature do
         expect(overflow?).to be(false)
       end
 
+      it 'opens a dropdown on a phone and lists the sub-pages' do
+        resize(430, mobile: true)
+        visit_page(path)
+        find('.navbar-toggler').click
+        expect(page).to have_css('#siteNav.collapse.show:not(.collapsing)')
+        click_button 'Omphalina'
+        expect(page).to have_css('button.dropdown-toggle[aria-expanded="true"]')
+        expect(page).to have_link('Vol 1, 2010')
+        expect(page).to have_link('Submission Guidelines')
+        expect(overflow?).to be(false)
+        shot("#{PageCapture.slug(path)}-mobile-dropdown")
+      end
+
+      it 'opens a dropdown on a desktop and closes it on a second click' do
+        resize(1440)
+        visit_page(path)
+        click_button 'Species List'
+        expect(page).to have_link('Flickr Images')
+        shot("#{PageCapture.slug(path)}-desktop-dropdown")
+        click_button 'Species List'
+        expect(page).to have_no_link('Flickr Images')
+      end
+
       it 'shows all nine links on one row without a toggler from 992 px up' do
         [992, 1200, 1440].each do |width|
           resize(width)
           visit_page(path)
           expect(page).to have_no_css('.navbar-toggler', visible: :visible)
-          tops = page.evaluate_script("Array.from(document.querySelectorAll('.navbar-nav .nav-link')).map(function (a) { return Math.round(a.getBoundingClientRect().top) })")
+          tops = page.evaluate_script("Array.from(document.querySelectorAll('.navbar-nav > .nav-item > .nav-link')).map(function (a) { return Math.round(a.getBoundingClientRect().top) })")
           expect(tops.size).to eq(9)
           expect(tops.uniq.size).to eq(1), "links wrapped at #{width}px: #{tops.inspect}"
           expect(overflow?).to be(false), "page scrolls sideways at #{width}px"

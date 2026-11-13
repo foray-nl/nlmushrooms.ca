@@ -36,6 +36,13 @@ RSpec.describe ApplyLayout do
       expect(out).to include('<a class="nav-link active" aria-current="page" href="foray_2026.html">')
     end
 
+    it 'marks a dropdown item and its parent toggle active on a sub-page' do
+      out = described_class.render(page, 'species_lists.html')
+      expect(out).to include('<a class="dropdown-item active" aria-current="page" href="species_lists.html">')
+      expect(out.scan('dropdown-toggle active').size).to eq(1)
+      expect(out).to match(/dropdown-toggle active"[^>]*>Species List</)
+    end
+
     it 'marks nothing active on a page that is not in the nav' do
       expect(described_class.render(page, 'foray_2025.html')).not_to include('nav-link active')
     end

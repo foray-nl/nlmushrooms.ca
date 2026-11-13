@@ -5,7 +5,7 @@
 # gem (navbar, navbar-expand-lg, navbar-toggler, collapse navbar-collapse; data-bs-toggle="collapse").
 #
 # Bootstrap's reboot (box-sizing, line-height, heading margins, link colours) would restyle every page, so
-# the full stylesheet is not used. This keeps only the navbar, nav-link and collapse rules (plus the :root
+# the full stylesheet is not used. This keeps only the navbar, nav-link, collapse and dropdown rules (plus the :root
 # variables they reference) and copies the JS bundle unchanged, all self-hosted under assets/vendor/bootstrap/.
 #
 #   ruby scripts/vendor_bootstrap_nav.rb [VERSION]   (default below; rewrites the three vendored files)
@@ -17,8 +17,9 @@ VERSION = (ARGV[0] || '5.3.3').freeze
 CDN = "https://cdn.jsdelivr.net/npm/bootstrap@#{VERSION}"
 OUT = File.expand_path('../assets/vendor/bootstrap', __dir__)
 
-KEEP = /\A(\.navbar(?!-expand-(?:sm|md|xl|xxl))[\w-]*|\.nav|\.nav-link|\.collapse|\.collapsing|:root)\b/
-DROP = /dropdown|offcanvas|nav-tabs|nav-pills|nav-underline|nav-fill|nav-justified|collapse-horizontal|navbar-expand-(?:sm|md|xl|xxl)/
+KEEP = /\A(\.navbar[\w-]*|\.nav|\.nav-link|\.collapse|\.collapsing|\.dropdown[\w-]*|:root)\b/
+# Selectors for variants the site does not use (other breakpoints, other directions, split buttons, dark menus).
+DROP = /offcanvas|nav-tabs|nav-pills|nav-underline|nav-fill|nav-justified|collapse-horizontal|navbar-expand-(?:sm|md|xl|xxl)|dropup|dropend|dropstart|dropdown-center|dropdown-toggle-split|dropdown-menu-(?:sm|md|lg|xl|xxl|start|end|dark)|\[data-bs-theme=dark\]/
 
 def fetch(path)
   Net::HTTP.get(URI("#{CDN}/#{path}")).force_encoding('UTF-8')
@@ -47,11 +48,15 @@ def blocks(css)
   out
 end
 
+# Returns the selector list reduced to the selectors worth keeping (or nil), so a shared rule such as
+# ".dropup, .dropend, .dropdown { position: relative }" survives as ".dropdown { position: relative }".
 def keep?(selector, body)
-  return false if selector.start_with?(':root') && !body.include?('--bs-') # skip scroll-behavior and similar
+  return nil if selector.start_with?(':root') && !body.include?('--bs-') # skip scroll-behavior and similar
 
-  selector.split(',').map(&:strip).any? { |s| s.match?(KEEP) || s.start_with?('[data-bs-theme=light]') } &&
-    !selector.match?(DROP)
+  kept = selector.split(',').map(&:strip).select do |s|
+    (s.match?(KEEP) || s.start_with?('[data-bs-theme=light]')) && !s.match?(DROP)
+  end
+  kept.empty? ? nil : kept.join(', ')
 end
 
 def filter(css)
@@ -61,8 +66,8 @@ def filter(css)
       "#{prelude} {\n#{inner}}\n" unless inner.strip.empty?
     elsif prelude.start_with?('@')
       nil
-    elsif keep?(prelude, body)
-      "#{prelude} {#{body}}\n"
+    elsif (selector = keep?(prelude, body))
+      "#{selector} {#{body}}\n"
     end
   end
   kept.join
