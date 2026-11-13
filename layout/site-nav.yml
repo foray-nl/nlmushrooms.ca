@@ -76,6 +76,19 @@ pages:
     parent: index.html
     subnav: true
     description: Links to mushroom and lichen publications, photo-sharing groups on Facebook and Flickr, and mycology websites useful to Foray NL members.
+  - file: species_list_explanations.html
+    name: Species List
+    parent: index.html
+    subnav: true
+    description: How the Foray NL species lists are organized, with Omphalina indices, lists by foray, and Flickr and voucher image indexes of Newfoundland and Labrador fungi.
+  - file: species_lists.html
+    name: Omphalina Indices
+    parent: species_list_explanations.html
+    description: Download the Excel spreadsheet indexing Omphalina back issues by author, topic and fungi species covered, from Foray Newfoundland and Labrador.
+  - file: species_list_by_foray.html
+    name: Cumulative and Foray Species List
+    parent: species_list_explanations.html
+    description: PDF species lists for each Foray NL foray since 2003, by location, plus the cumulative index of mushrooms collected in Newfoundland and Labrador.
   - file: science.html
     name: Science
     parent: index.html
