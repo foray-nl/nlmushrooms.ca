@@ -22,11 +22,12 @@ def write(root, rel, text="", binary=None):
 @pytest.fixture
 def site_root(tmp_path):
     """A tiny but complete foray-shaped tree: four pages, one foray, one volume, PDFs and images."""
-    root = str(tmp_path)
+    root = str(tmp_path / "site")
     write(root, "layout/site-nav.yml", """
         site:
           name: Foray Test
           url: https://example.test
+          locale: en_CA
           organization: {legal_name: Test Inc., email: a@example.test, telephone: "+1-709-000-0000", locality: Torbay, region: NL, country: CA}
           image: images/share/default.jpg
           image_alt: Logo
@@ -62,6 +63,6 @@ def site_root(tmp_path):
     for rel, data in (("foray_reports/2025 report.pdf", b"%PDF-1.4 a"), ("omphaline/Omphalina XII-1.pdf", b"%PDF-1.4 b"),
                       ("omphaline/Omphalina_XII-3.pdf", b"%PDF-1.4 c"), ("archive/forms/old.pdf", b"%PDF-1.4 d"),
                       ("anncum_1.pdf", b"%PDF-1.4 e"), ("images/poster.png", b"png1"), ("_wp_generated/t1.png", b"png2"),
-                      ("_wp_generated/t3.png", b"png3"), ("images/share/default.jpg", b"jpg")):
+                      ("_wp_generated/t3.png", b"png3"), ("images/share/default.jpg", b"jpg"), ("images/share/f25.jpg", b"jpg2")):
         write(root, rel, binary=data)
     return root

@@ -30,4 +30,4 @@ def test_no_hash_mode_and_summary(site_root):
     uploads = inventory.build(site.Site(site_root), hash_files=False)
     assert all(u["sha256"] is None for u in uploads)
     summary = inventory.summarize(uploads)
-    assert summary["by_kind"] == {"document": 4, "image": 4} and summary["total"] == 8
+    assert summary["by_kind"] == {"document": 4, "image": 5} and summary["total"] == 9

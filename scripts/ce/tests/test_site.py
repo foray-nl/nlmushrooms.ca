@@ -33,7 +33,7 @@ def test_public_pdfs_skip_archive(site_root):
 
 def test_site_images_only_image_dirs(site_root):
     assert site.site_images(site_root) == ["_wp_generated/t1.png", "_wp_generated/t3.png", "images/poster.png",
-                                           "images/share/default.jpg"]
+                                           "images/share/default.jpg", "images/share/f25.jpg"]
 
 
 def test_upload_slugs_resolve_collisions():
