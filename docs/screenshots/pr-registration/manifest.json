@@ -1,0 +1,7 @@
+{
+  "pages": [
+    "foray_2025"
+  ],
+  "before_base": "docs/screenshots/pr-registration/before",
+  "after_base": "docs/screenshots/pr-registration/after"
+}
