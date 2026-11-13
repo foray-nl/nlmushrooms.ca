@@ -1,0 +1,11 @@
+{
+  "pages": [
+    "articles_fungi_magazine",
+    "mycophyle_articles",
+    "facebook_links",
+    "osprey",
+    "fungal_websites"
+  ],
+  "before_base": "docs/screenshots/baseline-0a1f1fa",
+  "after_base": "docs/screenshots/pr-resources-children/after"
+}
