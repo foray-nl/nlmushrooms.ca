@@ -109,6 +109,10 @@ header { position: relative; }
 .navbar .dropdown-item { font-weight: 500; white-space: normal; }
 .navbar .dropdown-toggle { cursor: pointer; }
 .navbar .nav-item { text-align: center; }
+/* Dropdown toggles are buttons and shrink-wrap; stretch them so they centre like the plain links */
+@media (max-width: 991.98px) {
+  .navbar .navbar-nav .dropdown-toggle { width: 100%; }
+}
 @media (min-width: 992px) {
   .navbar .navbar-nav { gap: 0.25rem; }
   .navbar-expand-lg { justify-content: center; }
