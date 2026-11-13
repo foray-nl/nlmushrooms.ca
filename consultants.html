@@ -20,25 +20,78 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
+    "@graph": [
       {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://nlmushrooms.ca/"
+        "@type": "Organization",
+        "@id": "https://nlmushrooms.ca/#organization",
+        "name": "Foray Newfoundland and Labrador",
+        "legalName": "Mushroom Foray Newfoundland and Labrador Inc.",
+        "url": "https://nlmushrooms.ca/",
+        "logo": "https://nlmushrooms.ca/android-chrome-512x512.png",
+        "email": "info@nlmushrooms.ca",
+        "telephone": "+1-709-437-5097",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Torbay",
+          "addressRegion": "NL",
+          "addressCountry": "CA"
+        },
+        "sameAs": [
+          "https://www.facebook.com/ForayNL",
+          "https://www.instagram.com/foraynl/",
+          "https://www.flickr.com/photos/foray_nl/"
+        ]
       },
       {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "About Us",
-        "item": "https://nlmushrooms.ca/about_us.html"
+        "@type": "WebSite",
+        "@id": "https://nlmushrooms.ca/#website",
+        "url": "https://nlmushrooms.ca/",
+        "name": "Foray Newfoundland and Labrador",
+        "inLanguage": "en-CA",
+        "publisher": {
+          "@id": "https://nlmushrooms.ca/#organization"
+        }
       },
       {
-        "@type": "ListItem",
-        "position": 3,
+        "@type": "WebPage",
+        "@id": "https://nlmushrooms.ca/consultants.html#webpage",
+        "url": "https://nlmushrooms.ca/consultants.html",
         "name": "Consultants",
-        "item": "https://nlmushrooms.ca/consultants.html"
+        "description": "The mycological consultant, accountants and legal counsel who support Foray Newfoundland and Labrador.",
+        "inLanguage": "en-CA",
+        "isPartOf": {
+          "@id": "https://nlmushrooms.ca/#website"
+        },
+        "about": {
+          "@id": "https://nlmushrooms.ca/#organization"
+        },
+        "breadcrumb": {
+          "@id": "https://nlmushrooms.ca/consultants.html#breadcrumb"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://nlmushrooms.ca/consultants.html#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://nlmushrooms.ca/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About Us",
+            "item": "https://nlmushrooms.ca/about_us.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Consultants",
+            "item": "https://nlmushrooms.ca/consultants.html"
+          }
+        ]
       }
     ]
   }

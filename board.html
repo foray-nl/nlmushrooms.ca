@@ -20,25 +20,78 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [
+    "@graph": [
       {
-        "@type": "ListItem",
-        "position": 1,
-        "name": "Home",
-        "item": "https://nlmushrooms.ca/"
+        "@type": "Organization",
+        "@id": "https://nlmushrooms.ca/#organization",
+        "name": "Foray Newfoundland and Labrador",
+        "legalName": "Mushroom Foray Newfoundland and Labrador Inc.",
+        "url": "https://nlmushrooms.ca/",
+        "logo": "https://nlmushrooms.ca/android-chrome-512x512.png",
+        "email": "info@nlmushrooms.ca",
+        "telephone": "+1-709-437-5097",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Torbay",
+          "addressRegion": "NL",
+          "addressCountry": "CA"
+        },
+        "sameAs": [
+          "https://www.facebook.com/ForayNL",
+          "https://www.instagram.com/foraynl/",
+          "https://www.flickr.com/photos/foray_nl/"
+        ]
       },
       {
-        "@type": "ListItem",
-        "position": 2,
-        "name": "About Us",
-        "item": "https://nlmushrooms.ca/about_us.html"
+        "@type": "WebSite",
+        "@id": "https://nlmushrooms.ca/#website",
+        "url": "https://nlmushrooms.ca/",
+        "name": "Foray Newfoundland and Labrador",
+        "inLanguage": "en-CA",
+        "publisher": {
+          "@id": "https://nlmushrooms.ca/#organization"
+        }
       },
       {
-        "@type": "ListItem",
-        "position": 3,
-        "name": "Board",
-        "item": "https://nlmushrooms.ca/board.html"
+        "@type": "WebPage",
+        "@id": "https://nlmushrooms.ca/board.html#webpage",
+        "url": "https://nlmushrooms.ca/board.html",
+        "name": "Board of Directors",
+        "description": "The board of directors of Foray Newfoundland and Labrador, with the president, treasurer and secretary.",
+        "inLanguage": "en-CA",
+        "isPartOf": {
+          "@id": "https://nlmushrooms.ca/#website"
+        },
+        "about": {
+          "@id": "https://nlmushrooms.ca/#organization"
+        },
+        "breadcrumb": {
+          "@id": "https://nlmushrooms.ca/board.html#breadcrumb"
+        }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": "https://nlmushrooms.ca/board.html#breadcrumb",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": "https://nlmushrooms.ca/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "About Us",
+            "item": "https://nlmushrooms.ca/about_us.html"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Board",
+            "item": "https://nlmushrooms.ca/board.html"
+          }
+        ]
       }
     ]
   }
