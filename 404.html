@@ -22,7 +22,7 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <link rel="manifest" href="/site.webmanifest">
   <link rel="stylesheet" href="assets/vendor/bootstrap/bootstrap-nav.css?v=f0215bb4f9">
-  <link rel="stylesheet" href="assets/styles/site.css?v=837076d82d">
+  <link rel="stylesheet" href="assets/styles/site.css?v=8c18f825dc">
   <link rel="stylesheet" href="assets/vendor/fontawesome/fontawesome-social.css?v=2b50b7463a">
   <script defer src="assets/vendor/bootstrap/bootstrap.bundle.min.js?v=0833b2e9c3"></script>
   <script defer src="assets/scripts/site.js?v=5617f2975f"></script>
@@ -126,8 +126,24 @@
   <!-- /layout:nav -->
   <main class="page not-found">
     <p class="not-found-code" aria-hidden="true">4<img src="android-chrome-192x192.png" alt="" width="96" height="96">4</p>
-    <h1>This page has spored off</h1>
-    <p class="not-found-lead">Error 404, page not found. We looked fungi-where, but the page you wanted has gone back to the forest floor. Let's get you back on the trail.</p>
+    <p class="not-found-eyebrow">Error 404, page not found.</p>
+    <!-- One line is picked at random on load by assets/scripts/not-found.js (?headline=1 to 4 forces one); without JavaScript the first shows. -->
+    <div class="not-found-line" data-line>
+      <h1>Well, this is a mush-take.</h1>
+      <p class="not-found-lead">We checked every cap and stem, but the page you wanted isn't growing here. It may have moved, or the link may have a typo. Try one of these trails instead.</p>
+    </div>
+    <div class="not-found-line" data-line hidden>
+      <h1>Morel of the story: this page doesn't exist.</h1>
+      <p class="not-found-lead">An old link or a mistyped address can lead anywhere, but there is plenty still growing on this site. These paths are a good place to start.</p>
+    </div>
+    <div class="not-found-line" data-line hidden>
+      <h1>We truffled through every link and came up empty.</h1>
+      <p class="not-found-lead">Whatever you were hunting for isn't at this address. Don't let it spoil the foray: the paths below lead to the good finds.</p>
+    </div>
+    <div class="not-found-line" data-line hidden>
+      <h1>Gill-ty as charged: we lost this page.</h1>
+      <p class="not-found-lead">We'll try to do better next time. In the meantime, one of these links should get you back on the trail.</p>
+    </div>
     <ul class="not-found-links">
       <li><a class="not-found-btn" href="index.html">Home</a></li>
       <li><a class="not-found-btn" href="past_forays.html">Past Forays</a></li>
@@ -142,5 +158,6 @@
     </p>
   </footer>
   <!-- /layout:footer -->
+  <script src="assets/scripts/not-found.js?v=477e26ddaa"></script>
 </body>
 </html>

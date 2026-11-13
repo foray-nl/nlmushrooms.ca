@@ -389,6 +389,8 @@ module ApplyLayout
   def render(source, page_path)
     basename = File.basename(page_path)
     source = render_generated(source, basename)
+    # Page-level scripts outside the head partial (e.g. the 404 page's) are versioned too; assets/scripts is immutable.
+    source = source.gsub(%r{<script[^>]*src="assets/scripts/[^"]+"[^>]*>}) { |tag| version_assets(tag) }
     REGIONS.reduce(source) do |text, name|
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)

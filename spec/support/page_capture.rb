@@ -36,18 +36,19 @@ module PageCapture
 
   # Full-page screenshot per device via CDP. Mobile uses device emulation so the page's viewport meta is honoured
   # (the legacy pages declare width=1024, which is exactly what a phone would show).
-  def capture(page, path)
+  # query: appended to the URL (e.g. 'headline=2'); name: output file name, defaulting to the page slug.
+  def capture(page, path, query: nil, name: slug(path))
     browser = page.driver.browser
     block_trackers(page)
     DEVICES.each do |device, (width, height)|
       browser.execute_cdp('Emulation.setDeviceMetricsOverride',
                           width:, height:, deviceScaleFactor: 1, mobile: device == :mobile)
-      page.visit("/#{path.split('/').map { |s| CGI.escape(s).gsub('+', '%20') }.join('/')}")
+      page.visit("/#{path.split('/').map { |s| CGI.escape(s).gsub('+', '%20') }.join('/')}#{"?#{query}" if query}")
       wait_for_images(page)
       size = page.evaluate_script('[document.documentElement.scrollWidth, Math.max(document.documentElement.scrollHeight, document.body.scrollHeight)]')
       shot = browser.execute_cdp('Page.captureScreenshot', format: 'png', captureBeyondViewport: true,
                                  clip: { x: 0, y: 0, width: [size[0], width].max, height: size[1], scale: 1 })
-      file = File.join(out_dir, device.to_s, "#{slug(path)}.png")
+      file = File.join(out_dir, device.to_s, "#{name}.png")
       FileUtils.mkdir_p(File.dirname(file))
       File.binwrite(file, Base64.decode64(shot['data']))
     end
