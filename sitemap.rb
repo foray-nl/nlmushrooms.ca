@@ -12,7 +12,7 @@ require_relative 'scripts/apply_layout'
 
 module Sitemap
   ROOT = ApplyLayout::ROOT
-  EXCLUDE = %r{\A(?:tmp|docs|layout|vendor|spec|scripts|manifests|assets|node_modules)/|\A404\.html\z}
+  EXCLUDE = %r{\A(?:tmp|docs|archive|layout|vendor|spec|scripts|manifests|assets|node_modules)/|\A404\.html\z}
 
   module_function
 
