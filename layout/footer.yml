@@ -1,0 +1,20 @@
+# The site footer, generated into every page's <!-- layout:footer --> region by scripts/apply_layout.rb.
+# Link lists name pages from layout/site-nav.yml; the label is the page's registry name. Social links come from layout/socials.yml.
+tagline: Amateur mushroom forays in Newfoundland and Labrador since 2003.
+explore:
+  - foray_2026.html
+  - past_forays.html
+  - foray_reports_all.html
+  - species_list_explanations.html
+  - omphalina.html
+  - science.html
+  - resources.html
+involved:
+  - membership.html
+  - submission_guidelines.html
+  - contacts.html
+  - board.html
+legal:
+  - bylaws.html
+  - privacy.html
+  - accessibility.html

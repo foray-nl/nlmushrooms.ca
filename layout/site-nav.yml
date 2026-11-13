@@ -230,3 +230,13 @@ pages:
     name: Phyla/Genera Images
     parent: species_list_explanations.html
     description: Voucher photographs of fungi from Foray NL forays on Flickr, browsable by phylum (Basidiomycetes, Ascomycetes, lichens, slime molds) and by genus.
+  - file: privacy.html
+    name: Privacy
+    parent: index.html
+    title: Privacy Policy
+    description: What personal information Foray Newfoundland and Labrador collects through this website, forms and email, why, how it is protected, and your choices.
+  - file: accessibility.html
+    name: Accessibility
+    parent: index.html
+    title: Accessibility Statement
+    description: How Foray Newfoundland and Labrador works to make this website usable by everyone, the known gaps such as older PDFs, and how to ask for help or alternatives.
