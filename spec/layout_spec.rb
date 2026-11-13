@@ -25,19 +25,26 @@ RSpec.describe ApplyLayout do
 
     it 'replaces only the marked region and keeps its indentation' do
       out = described_class.render(page, 'foray_2026.html')
-      expect(out).to include("  <nav aria-label=\"Main navigation\">\n")
+      expect(out).to include("  <nav class=\"navbar navbar-expand-lg navbar-dark\" aria-label=\"Main navigation\">\n")
       expect(out).not_to include('stale')
       expect(out).to include("  <p>kept</p>\n")
     end
 
     it 'marks only the link to the page being written as active' do
       out = described_class.render(page, 'foray_2026.html')
-      expect(out.scan('class="active"').size).to eq(1)
-      expect(out).to include('<a href="foray_2026.html" class="active">')
+      expect(out.scan('nav-link active').size).to eq(1)
+      expect(out).to include('<a class="nav-link active" aria-current="page" href="foray_2026.html">')
+    end
+
+    it 'marks a dropdown item and its parent toggle active on a sub-page' do
+      out = described_class.render(page, 'species_lists.html')
+      expect(out).to include('<a class="dropdown-item active" aria-current="page" href="species_lists.html">')
+      expect(out.scan('dropdown-toggle active').size).to eq(1)
+      expect(out).to match(/dropdown-toggle active"[^>]*>Species List</)
     end
 
     it 'marks nothing active on a page that is not in the nav' do
-      expect(described_class.render(page, 'foray_2025.html')).not_to include('class="active"')
+      expect(described_class.render(page, 'foray_2025.html')).not_to include('nav-link active')
     end
 
     it 'is idempotent' do

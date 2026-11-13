@@ -10,7 +10,7 @@
 #   <!-- /layout:nav -->
 #
 # Regions: head (shared <link>s), header, nav, footer. Everything outside the markers is left alone.
-# In the nav region the link to the page being written gets class="active".
+# In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
 #   ruby scripts/apply_layout.rb            rewrite every page that has markers
 #   ruby scripts/apply_layout.rb --check    exit 1 and list pages that differ (CI drift check); writes nothing
@@ -46,8 +46,15 @@ module ApplyLayout
     /^([ \t]*)<!-- layout:#{name} -->\n.*?^\1<!-- \/layout:#{name} -->\n/m
   end
 
+  # Marks the link to the page being written, and the dropdown toggle that contains it.
   def mark_active(nav, basename)
-    nav.gsub(/<a href="#{Regexp.escape(basename)}"/) { %(<a href="#{basename}" class="active") }
+    name = Regexp.escape(basename)
+    nav = nav.gsub(/<a class="(nav-link|dropdown-item)" href="#{name}"/) do
+      %(<a class="#{Regexp.last_match(1)} active" aria-current="page" href="#{basename}")
+    end
+    nav.gsub(%r{<li class="nav-item dropdown">.*?</ul>\s*</li>}m) do |block|
+      block.include?('dropdown-item active') ? block.sub('class="nav-link dropdown-toggle"', 'class="nav-link dropdown-toggle active"') : block
+    end
   end
 
   def run(argv)
