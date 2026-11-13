@@ -83,6 +83,12 @@ Bootstrap would restyle every page), plus the unmodified JS bundle, all self-hos
 `assets/styles/site.css`. `RUN_VISUAL=1 bundle exec rspec spec/visual/nav_spec.rb` checks the toggle and that nothing
 scrolls sideways at 430, 992, 1200 and 1440 px.
 
+### Social icons
+Accounts live in `layout/socials.yml`; `apply_layout.rb` renders them as tooltipped icon links in the header (`{{social-links}}` in the header partial) and as an icon-plus-text list wherever a page has a `<!-- layout:social -->` region (Contacts). Icons are the Font Awesome Free brand glyphs, subset to the three in use (`assets/vendor/fontawesome/`, same `fa-brands fa-<name>` classes as Community Engine). To add a platform: add the glyph to the subset (`pyftsubset fa-brands-400.woff2 --unicodes=U+f09a,U+f16d,U+f16e,<new> --flavor=woff2 --output-file=assets/vendor/fontawesome/fa-brands-subset.woff2`), add its class to `fontawesome-social.css`, then add the account. Tooltips are Bootstrap's, started by `assets/scripts/site.js`; each link also has an `aria-label` ("Platform: handle (opens in a new tab)").
+
+### Cache busting
+`apply_layout.rb` appends `?v=<first 10 hex of the file's SHA-256>` to the local stylesheet and script URLs in the shared head, so a changed file is a new URL. `netlify.toml` caches those paths for a year (`immutable`), revalidates HTML on every load, and sets `no-cache` on unversioned static files. Run `ruby scripts/apply_layout.rb` after editing any CSS or JS; the layout spec fails if a reference is stale. Netlify also sends an ETag on every response.
+
 ### Before/after tables in PR bodies
 
 Every PR that changes how a page looks shows the page before and after, desktop and mobile. After capturing

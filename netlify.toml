@@ -97,3 +97,51 @@
   to = "/404.html"
   status = 404
   force = true
+
+# Cache policy. Cloudflare sits in front of Netlify and stretches any short origin max-age on static files to its Browser
+# Cache TTL (4 hours), which left visitors with old CSS next to new HTML. So:
+#  - HTML is always revalidated (ETag, 304 when unchanged).
+#  - Files that pages reference with ?v=<content digest> (added by scripts/apply_layout.rb) never change at a given URL,
+#    so they are cached for a year as immutable. A changed file gets a new digest, hence a new URL, on the next deploy.
+#    The Font Awesome subset is referenced by name from its CSS: give a changed font a new file name.
+#  - Unversioned static files (images, legacy WebPlus styles and scripts) use no-cache: stored, but revalidated on every
+#    use with their ETag, so a replaced file shows up at once. Cloudflare does not rewrite no-cache.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/vendor/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/scripts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/styles/site.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/styles/main.css"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/_wp_scripts/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/_wp_generated/*"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/images/*"
+  [headers.values]
+    Cache-Control = "no-cache"

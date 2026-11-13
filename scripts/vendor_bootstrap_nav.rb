@@ -5,7 +5,7 @@
 # gem (navbar, navbar-expand-lg, navbar-toggler, collapse navbar-collapse; data-bs-toggle="collapse").
 #
 # Bootstrap's reboot (box-sizing, line-height, heading margins, link colours) would restyle every page, so
-# the full stylesheet is not used. This keeps only the navbar, nav-link, nav-pills, breadcrumb, collapse and dropdown rules (plus the :root
+# the full stylesheet is not used. This keeps only the navbar, nav-link, nav-pills, breadcrumb, tooltip, fade, visually-hidden, collapse and dropdown rules (plus the :root
 # variables they reference) and copies the JS bundle unchanged, all self-hosted under assets/vendor/bootstrap/.
 #
 #   ruby scripts/vendor_bootstrap_nav.rb [VERSION]   (default below; rewrites the three vendored files)
@@ -17,7 +17,7 @@ VERSION = (ARGV[0] || '5.3.3').freeze
 CDN = "https://cdn.jsdelivr.net/npm/bootstrap@#{VERSION}"
 OUT = File.expand_path('../assets/vendor/bootstrap', __dir__)
 
-KEEP = /\A(\.navbar[\w-]*|\.nav|\.nav-link|\.collapse|\.collapsing|\.dropdown[\w-]*|\.breadcrumb[\w-]*|:root)\b/
+KEEP = /\A(\.navbar[\w-]*|\.nav|\.nav-link|\.collapse|\.collapsing|\.dropdown[\w-]*|\.breadcrumb[\w-]*|\.tooltip[\w-]*|\.bs-tooltip[\w-]*|\.fade|\.visually-hidden|:root)\b/
 # Selectors for variants the site does not use (other breakpoints, other directions, split buttons, dark menus).
 DROP = /offcanvas|nav-tabs|nav-underline|nav-fill|nav-justified|collapse-horizontal|navbar-expand-(?:sm|md|xl|xxl)|dropup|dropend|dropstart|dropdown-center|dropdown-toggle-split|dropdown-menu-(?:sm|md|lg|xl|xxl|start|end|dark)|\[data-bs-theme=dark\]/
 

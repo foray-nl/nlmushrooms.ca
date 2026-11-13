@@ -106,4 +106,36 @@ RSpec.describe 'Main navigation', :js, type: :feature do
       end
     end
   end
+
+  describe 'social icons in the header' do
+    {
+      'Facebook: ForayNL' => 'https://www.facebook.com/ForayNL',
+      'Instagram: @foraynl' => 'https://www.instagram.com/foraynl/',
+      'Flickr: foray_nl' => 'https://www.flickr.com/photos/foray_nl/'
+    }.each do |label, url|
+      it "names #{label} in a tooltip on hover and on keyboard focus" do
+        resize(1440)
+        visit_page('about_us.html')
+        link = find("a.social-link[href='#{url}']")
+        expect(link['aria-label']).to eq("#{label} (opens in a new tab)")
+        link.hover
+        expect(page).to have_css('.tooltip.show .tooltip-inner', text: label)
+        page.execute_script('document.activeElement && document.activeElement.blur()')
+        page.driver.browser.action.move_to_location(5, 5).perform
+        expect(page).to have_no_css('.tooltip.show')
+        page.execute_script("document.querySelector(\"a.social-link[href='#{url}']\").focus()")
+        expect(page).to have_css('.tooltip.show .tooltip-inner', text: label)
+      end
+    end
+
+    it 'stays inside the viewport on a phone and on a wide desktop' do
+      [[430, true], [1440, false]].each do |width, mobile|
+        resize(width, mobile:)
+        visit_page('about_us.html')
+        expect(page).to have_css('a.social-link', count: 3)
+        expect(overflow?).to be(false)
+        shot("social-#{width}")
+      end
+    end
+  end
 end

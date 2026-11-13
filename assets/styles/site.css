@@ -14,6 +14,44 @@ header img {
   height: auto;
   border-radius: 8px;
 }
+/* Social icons: a centred row under the banner, moving to the top right of the header band once the viewport is wide
+   enough (banner 980px + room for 3 icons on the right) so it cannot overlap the banner. */
+header { position: relative; }
+.social-links ul {
+  display: flex;
+  justify-content: center;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+}
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #243542;
+  color: #fff;
+  font-size: 1.3rem;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.social-link:hover,
+.social-link:focus-visible { background: #ee722a; color: #fff; }
+.social-link:focus-visible { outline: 3px solid #243542; outline-offset: 2px; }
+@media (min-width: 1240px) {
+  .social-links { position: absolute; top: 1.5rem; right: 1.5rem; }
+  .social-links ul { margin: 0; flex-direction: column; }
+}
+.social-list { list-style: none; margin: 0 0 1rem; padding: 0; }
+.social-list li { margin: 0 0 0.5rem; }
+.social-list a { color: #243542; font-weight: 600; text-decoration: none; }
+.social-list a:hover,
+.social-list a:focus-visible { text-decoration: underline; }
+.social-list .fa-brands { font-size: 1.4rem; width: 1.6rem; vertical-align: middle; }
+.social-list .social-handle { font-weight: 400; color: #4a4a4a; }
 /* Nav: Bootstrap navbar markup (see assets/vendor/bootstrap), site colours and spacing */
 .navbar {
   background: #243542;
@@ -234,14 +272,15 @@ main.page a { color: #b8480f; }
   line-height: 1.5;
   border-bottom: 3px solid transparent;
 }
-.subnav .subnav-title::after { content: ""; display: inline-block; width: 1px; height: 1em; background: #243542; opacity: 0.4; margin-left: 1.25rem; vertical-align: -0.15em; }
-.subnav .nav { flex-wrap: wrap; gap: 0 0.25rem; margin: 0; padding: 0; list-style: none; }
+/* The divider belongs to the list, not the title link, so the title's hover/active underline hugs the text only. */
+.subnav .nav::before { content: ""; align-self: center; width: 1px; height: 1.1em; background: #243542; opacity: 0.4; margin-right: 0.5rem; }
+.subnav .nav { display: flex; flex-wrap: wrap; gap: 0 0.25rem; margin: 0; padding: 0; list-style: none; }
 .subnav .nav-link { color: #243542; line-height: 1.5; padding: 0.3em 0.7em; border-bottom: 3px solid transparent; border-radius: 0; font-weight: 500; }
 .subnav .nav-link:hover, .subnav .nav-link:focus, .subnav .subnav-title:hover, .subnav .subnav-title:focus { color: #243542; border-bottom-color: #ee722a; outline: none; }
 .subnav .nav-link.active, .subnav .subnav-title.active { border-bottom-color: #243542; font-weight: 700; }
 @media (max-width: 991.98px) {
   .subnav { gap: 0; padding: 0.4rem 0.5rem; }
   .subnav .subnav-title { flex: 1 0 100%; text-align: center; }
-  .subnav .subnav-title::after { display: none; }
+  .subnav .nav::before { display: none; }
   .subnav .nav { justify-content: center; }
 }
