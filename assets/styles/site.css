@@ -231,11 +231,12 @@ main.page a { color: #b8480f; }
   font-size: 0.85rem;
   text-decoration: none;
   padding: 0.3em 0;
+  line-height: 1.5;
   border-bottom: 3px solid transparent;
 }
 .subnav .subnav-title::after { content: ""; display: inline-block; width: 1px; height: 1em; background: #243542; opacity: 0.4; margin-left: 1.25rem; vertical-align: -0.15em; }
-.subnav .nav { flex-wrap: wrap; gap: 0 0.25rem; }
-.subnav .nav-link { color: #243542; padding: 0.3em 0.7em; border-bottom: 3px solid transparent; border-radius: 0; font-weight: 500; }
+.subnav .nav { flex-wrap: wrap; gap: 0 0.25rem; margin: 0; padding: 0; list-style: none; }
+.subnav .nav-link { color: #243542; line-height: 1.5; padding: 0.3em 0.7em; border-bottom: 3px solid transparent; border-radius: 0; font-weight: 500; }
 .subnav .nav-link:hover, .subnav .nav-link:focus, .subnav .subnav-title:hover, .subnav .subnav-title:focus { color: #243542; border-bottom-color: #ee722a; outline: none; }
 .subnav .nav-link.active, .subnav .subnav-title.active { border-bottom-color: #243542; font-weight: 700; }
 @media (max-width: 991.98px) {
