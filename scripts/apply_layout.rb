@@ -11,7 +11,7 @@
 #
 # Regions: head (shared <link>s), header, nav, footer, plus generated regions built from the page registry
 # layout/site-nav.yml: meta (<title>, description, canonical, Open Graph and Twitter tags, JSON-LD graph), breadcrumb and section-nav; and the social region (layout/socials.yml; the header partial gets the same
-# accounts through its {{social-links}} token); and the forays and reports regions (layout/forays.yml: the Past Forays directory and the report list). Forays with their own page also get Event JSON-LD. Everything outside the markers is left alone.
+# accounts through its {{social-links}} token); the issues (a volume page's covers) and volumes (the Omphalina overview list) regions from layout/omphalina.yml; and the forays and reports regions (layout/forays.yml: the Past Forays directory and the report list). Forays with their own page also get Event JSON-LD. Everything outside the markers is left alone.
 # In the nav region the link to the page being written gets class="... active" and aria-current="page" (and so does its dropdown toggle).
 #
 #   ruby scripts/apply_layout.rb            rewrite every page that has markers
@@ -27,7 +27,8 @@ module ApplyLayout
   ROOT = File.expand_path('..', __dir__)
   PARTIALS = File.join(ROOT, 'layout', 'partials')
   REGIONS = %w[head header nav footer].freeze
-  GENERATED = %w[meta breadcrumb section-nav social forays reports].freeze
+  GENERATED = %w[meta breadcrumb section-nav social forays reports issues volumes].freeze
+  OMPHALINA = File.join(ROOT, 'layout', 'omphalina.yml')
   FORAYS = File.join(ROOT, 'layout', 'forays.yml')
   SOCIALS = File.join(ROOT, 'layout', 'socials.yml')
   HIERARCHY = File.join(ROOT, 'layout', 'site-nav.yml')
@@ -93,7 +94,7 @@ module ApplyLayout
   end
 
   def canonical_url(basename)
-    basename == registry.first['file'] ? "#{site['url']}/" : "#{site['url']}/#{basename}"
+    basename == registry.first['file'] ? "#{site['url']}/" : "#{site['url']}/#{basename.gsub(' ', '%20')}"
   end
 
   # <title>, description, canonical link and BreadcrumbList JSON-LD for a registered page ('' for any other file).
@@ -165,6 +166,11 @@ module ApplyLayout
       'isPartOf' => { '@id' => website_id }, 'about' => { '@id' => org_id }
     }
     node['breadcrumb'] = { '@id' => "#{url}#breadcrumb" } if trail(basename).size > 1
+    vol = volume_for(basename)
+    if vol
+      node['mainEntity'] = { '@type' => 'PublicationVolume', 'volumeNumber' => vol['volume'].to_s, 'datePublished' => vol['year'].to_s,
+                             'name' => "Omphalina #{volume_label(vol)}", 'isPartOf' => { '@type' => 'Periodical', 'name' => 'Omphalina', 'publisher' => { '@id' => org_id } } }
+    end
     node
   end
 
@@ -268,6 +274,46 @@ module ApplyLayout
     %(<ul class="report-list">\n#{rows.join}</ul>\n)
   end
 
+  def omphalina
+    @omphalina ||= YAML.safe_load_file(OMPHALINA).sort_by { |v| -v['volume'] }
+  end
+
+  def volume_for(basename) = omphalina.find { |v| v['page'] == basename }
+
+  # Width and height of a PNG from its header, so thumbnails reserve their space.
+  def png_size(path)
+    File.binread(File.join(ROOT, path), 24)[16, 8].unpack('NN')
+  end
+
+  def volume_label(vol) = "Volume #{vol['volume']} (#{vol['year']})"
+
+  # Cover grid for one volume page: each cover links to the issue PDF.
+  def issue_grid(basename)
+    vol = volume_for(basename)
+    return '' unless vol
+
+    cards = vol['issues'].map do |i|
+      w, h = png_size(i['thumb'])
+      label = "Volume #{vol['volume']}, Issue #{i['issue']}"
+      %(  <li class="issue-card"><a href="#{pdf_href(i['pdf'])}" target="_blank" rel="noopener noreferrer"><img src="#{i['thumb']}" alt="Cover of Omphalina #{label}" width="#{w}" height="#{h}" decoding="async"><span class="issue-label">#{label}<span class="visually-hidden"> (PDF, opens in a new tab)</span></span></a></li>\n)
+    end
+    %(<ul class="issue-grid">\n#{cards.join}</ul>\n)
+  end
+
+  # Volume list for the Omphalina overview: one media card per volume, newest first, first cover on the right.
+  def volume_list
+    cards = omphalina.map do |v|
+      first = v['issues'].first
+      w, h = png_size(first['thumb'])
+      count = v['issues'].size
+      out = +%(  <li class="media-card">\n    <div class="media-card-body">\n)
+      out << %(      <h3>#{volume_label(v)}</h3>\n      <p>#{count} #{count == 1 ? 'issue' : 'issues'}</p>\n)
+      out << %(      <p class="media-card-link"><a class="stretched-link" href="#{v['page']}">Browse Volume #{v['volume']}</a></p>\n    </div>\n)
+      out << %(    <img class="media-card-img" src="#{first['thumb']}" alt="" width="#{w}" height="#{h}" decoding="async">\n  </li>\n)
+    end
+    %(<ul class="report-list">\n#{cards.join}</ul>\n)
+  end
+
   # schema.org Event for a foray that has its own page.
   def event(basename)
     f = foray_for(basename)
@@ -360,7 +406,7 @@ module ApplyLayout
     GENERATED.reduce(source) do |text, name|
       text.gsub(region_pattern(name)) do
         indent = Regexp.last_match(1)
-        body = { 'meta' => meta(basename), 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list), 'forays' => foray_directory, 'reports' => report_list }.fetch(name)
+        body = { 'meta' => meta(basename), 'breadcrumb' => breadcrumb(basename), 'section-nav' => section_nav(basename), 'social' => social_links(:list), 'forays' => foray_directory, 'reports' => report_list, 'issues' => issue_grid(basename), 'volumes' => volume_list }.fetch(name)
         lines = body.lines.map { |l| "#{indent}#{l}" }.join
         "#{indent}<!-- layout:#{name} -->\n#{lines}#{indent}<!-- /layout:#{name} -->\n"
       end

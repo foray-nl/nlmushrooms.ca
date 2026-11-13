@@ -18,7 +18,7 @@ ignore_sources: []
 files:
   - path: Omphalina_XIV_No2.pdf
     kind: file
-    referenced_by: [current issue.html]
+    referenced_by: [current_issue.html]
     description: Omphalina Volume XIV, No. 2 (linked from the "current issue" page as a cover thumbnail).
     possible_locations: [Foray NL board or editor, Nextcloud Foray NL folder, Omphalina issue mailing list]
     status: missing
