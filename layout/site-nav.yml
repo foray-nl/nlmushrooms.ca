@@ -104,3 +104,80 @@ pages:
     schema_type: ContactPage
     title: Contact Us
     description: Contact Foray Newfoundland and Labrador by email, telephone or mail, and find the organization on Facebook, Instagram and Flickr.
+  - file: omphalina.html
+    name: Omphalina
+    parent: index.html
+    schema_type: CollectionPage
+    description: Omphalina is the free newsletter and journal of Foray Newfoundland and Labrador, with short articles on the mushrooms and fungi of the province.
+  - file: current_issue.html
+    name: Current Issue
+    parent: omphalina.html
+    description: "Download the current issue of Omphalina, Volume 14, No. 3, and recent back issues of the Foray Newfoundland and Labrador newsletter."
+  - file: search.html
+    name: Search Back Issues
+    parent: omphalina.html
+    description: Search every back issue of Omphalina by topic, species or author in the Memorial University archive, or browse the indices spreadsheet.
+  - file: submission_guidelines.html
+    name: Submission Guidelines
+    parent: omphalina.html
+    description: Foray NL welcomes submissions to Omphalina on any subject related to mushrooms, mycology or fungi. Read the submission guidelines.
+  - file: omphalina_2021.html
+    name: "Vol 12, 2021"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 12, 2021: download the 3 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2020.html
+    name: "Vol 11, 2020"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 11, 2020: download the 4 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2019.html
+    name: "Vol 10, 2019"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 10, 2019: download the 4 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2018.html
+    name: "Vol 9, 2018"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 9, 2018: download the 9 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2017.html
+    name: "Vol 8, 2017"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 8, 2017: download the 7 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2016.html
+    name: "Vol 7, 2016"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 7, 2016: download the 8 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2015.html
+    name: "Vol 6, 2015"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 6, 2015: download the 7 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2014.html
+    name: "Vol 5, 2014"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 5, 2014: download the 11 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2013.html
+    name: "Vol 4, 2013"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 4, 2013: download the 11 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2012.html
+    name: "Vol 3, 2012"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 3, 2012: download the 12 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2011.html
+    name: "Vol 2, 2011"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 2, 2011: download the 9 issues of the Foray Newfoundland and Labrador newsletter published that year."
+  - file: omphalina_2010.html
+    name: "Vol 1, 2010"
+    parent: omphalina.html
+    schema_type: CollectionPage
+    description: "Omphalina Volume 1, 2010: download the 7 issues of the Foray Newfoundland and Labrador newsletter published that year."

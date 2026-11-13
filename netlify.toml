@@ -3,6 +3,136 @@
 # already not served. Add new tooling paths here (and keep website content out of these directories).
 
 [[redirects]]
+  from = "/page40.html"
+  to = "/omphalina_2021.html"
+  status = 301
+
+[[redirects]]
+  from = "/page40"
+  to = "/omphalina_2021.html"
+  status = 301
+
+[[redirects]]
+  from = "/page38.html"
+  to = "/omphalina_2020.html"
+  status = 301
+
+[[redirects]]
+  from = "/page38"
+  to = "/omphalina_2020.html"
+  status = 301
+
+[[redirects]]
+  from = "/page39.html"
+  to = "/omphalina_2019.html"
+  status = 301
+
+[[redirects]]
+  from = "/page39"
+  to = "/omphalina_2019.html"
+  status = 301
+
+[[redirects]]
+  from = "/page37.html"
+  to = "/omphalina_2018.html"
+  status = 301
+
+[[redirects]]
+  from = "/page37"
+  to = "/omphalina_2018.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2017_1.html"
+  to = "/omphalina_2017.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2017_1"
+  to = "/omphalina_2017.html"
+  status = 301
+
+[[redirects]]
+  from = "/page36.html"
+  to = "/omphalina_2016.html"
+  status = 301
+
+[[redirects]]
+  from = "/page36"
+  to = "/omphalina_2016.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2015_1.html"
+  to = "/omphalina_2015.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2015_1"
+  to = "/omphalina_2015.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2013_1.html"
+  to = "/omphalina_2013.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2013_1"
+  to = "/omphalina_2013.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2012_1.html"
+  to = "/omphalina_2012.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2012_1"
+  to = "/omphalina_2012.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2011_1.html"
+  to = "/omphalina_2011.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2011_1"
+  to = "/omphalina_2011.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2010_1.html"
+  to = "/omphalina_2010.html"
+  status = 301
+
+[[redirects]]
+  from = "/omphalina_2010_1"
+  to = "/omphalina_2010.html"
+  status = 301
+
+[[redirects]]
+  from = "/current issue.html"
+  to = "/current_issue.html"
+  status = 301
+
+[[redirects]]
+  from = "/current issue"
+  to = "/current_issue.html"
+  status = 301
+
+[[redirects]]
+  from = "/current%20issue.html"
+  to = "/current_issue.html"
+  status = 301
+
+[[redirects]]
+  from = "/current%20issue"
+  to = "/current_issue.html"
+  status = 301
+
+[[redirects]]
   from = "/foray_reports.html"
   to = "/past_forays.html"
   status = 301
