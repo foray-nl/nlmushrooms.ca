@@ -1,8 +1,10 @@
 {
   "pages": [
+    "foray_2023",
     "foray_2024",
+    "foray_2025",
     "foray_2026"
   ],
-  "before_base": "docs/screenshots/baseline-0a1f1fa",
+  "before_base": "docs/screenshots/pr-22-nav/before",
   "after_base": "docs/screenshots/pr-22-nav/after"
 }
