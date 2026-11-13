@@ -76,6 +76,10 @@ pages:
     parent: index.html
     subnav: true
     description: Links to mushroom and lichen publications, photo-sharing groups on Facebook and Flickr, and mycology websites useful to Foray NL members.
+  - file: science.html
+    name: Science
+    parent: index.html
+    description: Scholarly articles on fungi, with downloadable PDFs, that grew out of Foray NL collections and the herbarium at Grenfell Campus, Memorial University.
   - file: articles_fungi_magazine.html
     name: Fungi
     parent: resources.html
