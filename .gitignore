@@ -1,2 +1,4 @@
 omphaline/O-13-1.original.pdf
 tmp/
+__pycache__/
+.pytest_cache/
