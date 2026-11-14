@@ -26,16 +26,20 @@ def records(files, name):
     return files[f"records/{name}.yml"][1]
 
 
-def test_pages_nest_with_refs_and_bodies(built):
+def test_pages_nest_by_slug_with_blocks_and_page_blocks(built):
     files = built[2]
     pages = by_key(records(files, "pages"))
     page = pages["past-forays/foray-2025"]
-    assert page["refs"]["parent"] == "page:past-forays"
-    assert page["refs"]["share_image"] == "upload:f25"
+    assert page["attributes"]["slug"] == "past-forays/foray-2025" and "parent" not in page.get("refs", {})
+    assert page["refs"]["community"] == "community:foray-nl"
     assert page["translations"]["en"]["title"] == "Foray 2025"
-    assert page["attributes"]["seo_title"] == "Foray 2025 | Past Forays | Foray Test"
+    assert "meta_description" in page["attributes"] and "seo_title" not in page["attributes"]
     blocks = by_key(records(files, "content_blocks"))
-    assert "<h1>foray_2025</h1>" in blocks["past-forays/foray-2025.body"]["translations"]["en"]["content_html"]
+    block = blocks["past-forays/foray-2025.body"]
+    assert block["attributes"]["type"] == "BetterTogether::Content::Html"
+    assert "<h1>foray_2025</h1>" in block["translations"]["en"]["content"]
+    link = by_key(records(files, "page_blocks"))["past-forays/foray-2025/body"]
+    assert link["refs"] == {"page": "page:past-forays/foray-2025", "block": "content_block:past-forays/foray-2025.body"}
     assert "home" in pages and files["records/pages.yml"][0] == "page"
 
 
@@ -52,13 +56,26 @@ def test_gaps_logged_against_deficiency_numbers(built):
     assert gaps["blob-total"]["deficiency"] == 3 and gaps["platform-target"]["deficiency"] == 6
 
 
-def test_events_and_issue_refs(built):
+def test_events_use_ce_fields_and_card_art_becomes_the_cover_image(built):
     files = built[2]
     events = by_key(records(files, "events"))
-    assert events["foray-2025"]["refs"]["report"] == "upload:foray-report-2025"
     assert events["foray-2021"]["attributes"]["status"] == "cancelled"
-    issue = by_key(records(files, "omphalina_issues"))["volume-12/issue-3"]
-    assert issue["refs"]["pdf"] == "upload:omphalina-xii-3" and issue["refs"]["cover"].startswith("upload:")
+    assert events["foray-2025"]["attributes"]["status"] == "confirmed"
+    assert not {"year", "venue", "area", "review_note"} & set(events["foray-2025"]["attributes"])
+    assert "refs" not in events["foray-2025"]
+
+
+def test_social_accounts_hang_off_a_community_contact_detail(built):
+    files = built[2]
+    assert by_key(records(files, "contact_details"))["main"]["refs"] == {"contactable": "community:foray-nl"}
+    social = records(files, "social_media_accounts")[0]
+    assert social["refs"] == {"contact_detail": "contact_detail:main"} and "platform_name" in social["attributes"]
+
+
+def test_redirects_carry_from_path_as_an_attribute_under_a_hash_key(built):
+    redirect = records(built[2], "redirects")[0]
+    assert redirect["attributes"]["from_path"].startswith("/") and "/" not in redirect["key"]
+    assert redirect["attributes"]["source"] == "seed" and "match" not in redirect["attributes"]
 
 
 def test_all_refs_resolve_inside_the_packet(built):
@@ -112,7 +129,7 @@ def test_cli_writes_packet_with_hardlinked_blobs(site_root, tmp_path):
     man = json.loads((out / "MANIFEST.json").read_text())
     blob = next(e for e in man["files"] if e["path"].startswith("blobs/"))
     assert (out / blob["path"]).stat().st_size == blob["size"]
-    assert (out / "gaps.json").exists()
+    assert (tmp_path / "pk.gaps.json").exists() and not (out / "gaps.json").exists()
     again = tmp_path / "pk2"
     assert seed_packet.main(["--root", site_root, "--out", str(again), "--blobs", "none"]) == 0
     assert not (again / "blobs").exists()

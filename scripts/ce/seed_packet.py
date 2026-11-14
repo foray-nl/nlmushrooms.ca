@@ -50,7 +50,7 @@ def main(argv=None):
         return 0
     check_out(args.root, args.out)
     packet.write(args.out, text, blobs, args.root, args.blobs)
-    with open(os.path.join(args.out, "gaps.json"), "w", encoding="utf-8") as handle:
+    with open(os.path.join(os.path.dirname(os.path.abspath(args.out)), os.path.basename(args.out.rstrip("/")) + ".gaps.json"), "w", encoding="utf-8") as handle:
         json.dump(report["gaps"], handle, indent=2)
     return 0
 

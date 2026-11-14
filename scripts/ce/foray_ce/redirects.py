@@ -103,8 +103,9 @@ def key(path):
 
 
 def records(entries):
-    """Protocol record dicts (key, attributes) for records/redirects.yml."""
+    """Protocol record dicts for records/redirects.yml. The key is a stable hash; the CE Redirect type matches on the
+    from_path attribute because a URL path is not a valid packet key. Exact paths only."""
     return [{"key": key(e["from"]),
-             "attributes": {"from_path": e["from"], "to_path": e["to"], "status": e["status"],
-                            "match": "prefix" if e["from"].endswith("/*") else "exact", "kind": e["kind"],
-                            "source": e["source"]}} for e in entries]
+             "attributes": {"from_path": e["from"], "to_path": e["to"], "status": e["status"], "active": True,
+                            "source": "seed", "note": f"{e['kind']}: {e['source']}"}}
+            for e in entries if not e["from"].endswith("/*")]
