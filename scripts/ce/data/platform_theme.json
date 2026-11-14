@@ -1,0 +1,17 @@
+{
+  "_comment": "Foray theme tokens for the CE platform theme settings (platform.settings['theme']). Project specific; the gem ships no Foray preset. Apply through the seed packet or the platform form.",
+  "theme": {
+    "primary": "#243542",
+    "primary_text": "#ffffff",
+    "accent": "#ee722a",
+    "accent_dark": "#b8480f",
+    "band": "#f5f5f5",
+    "body_text": "#243542",
+    "link": "#b8480f",
+    "navbar_bg": "#243542",
+    "navbar_link": "#ffffff",
+    "footer_bg": "#243542",
+    "footer_link": "#ffffff",
+    "font": "tahoma"
+  }
+}
