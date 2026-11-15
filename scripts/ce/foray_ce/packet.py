@@ -202,7 +202,9 @@ def build_navigation(site, gaps):
         if parent and parent != site.home:
             refs["parent"] = ref("navigation_item", f"header/{site.path(parent)}")
         items.append(record(f"header/{site.path(file)}", {"item_type": "link", "visible": True, "privacy": "public"},
-                            {"en": {"title": page["name"]}}, refs, position=position[parent]))
+                            None, refs, position=position[parent]))
+    gaps.add(2, "nav-label-from-page", "NavigationItem#title delegates to the linked page, so short menu labels "
+             "(site-nav name) cannot differ from the page title; items omit title and show the page title")
     gaps.add(2, "header-nav-from-registry", "Header menu membership and order live in layout/partials/nav.html "
              "(hand edited); the packet derives the tree from site-nav.yml parents")
     for index, group in enumerate(("explore", "involved", "legal")):
@@ -215,7 +217,7 @@ def build_navigation(site, gaps):
                     "linkable": ref("page", page_key(site, file))}
             items.append(record(f"footer/{page_key(site, file)}", {"item_type": "link", "visible": True,
                                                                  "privacy": "public"},
-                                {"en": {"title": site.pages[file]["name"]}}, refs, position=pos))
+                                None, refs, position=pos))
     if site.footer.get("tagline"):
         gaps.add(2, "footer-tagline", "Footer tagline has no host model or slot; not carried (host app footer partial)")
     return areas, items
