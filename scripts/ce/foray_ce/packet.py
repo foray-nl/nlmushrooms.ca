@@ -166,12 +166,13 @@ def build_pages(site, uploads_by_path, gaps):
             gaps.add(2, "page-schema-type", "Page has no per-page schema_type field (needs yield :structured_data)")
         if page.get("subnav") or page.get("subnav_hidden"):
             gaps.add(2, "page-subnav-flags", "Horizontal section sub-nav and subnav_hidden have no model")
+        gaps.add(2, "page-position", "Page and SocialMediaAccount have no position column; sibling order is not carried")
         gaps.add(2, "page-seo-title", "Page has no separate SEO title; the page title is used")
         # Nested pages carry their path as the slug (about/mission); the Page type has no parent reference.
         attrs = {"slug": key, "privacy": "public", "published_at": published_at, "show_title": True,
                  "meta_description": page["description"]}
         pages.append(record(key, attrs, {"en": {"title": page.get("title") or page["name"]}},
-                            {"community": ref("community", COMMUNITY_KEY)}, position=order[parent]))
+                            {"community": ref("community", COMMUNITY_KEY)}))
         with open(os.path.join(site.root, file), encoding="utf-8") as handle:
             body = extract_body(handle.read())
         if body is None:
@@ -272,7 +273,7 @@ def build_misc(site, uploads_by_path, gaps):
         socials.append(record(account["platform"].lower(),
                               {"platform_name": account["platform"], "handle": account["handle"],
                                "url": account["url"], "privacy": "public"},
-                              refs={"contact_detail": ref("contact_detail", "main")}, position=pos))
+                              refs={"contact_detail": ref("contact_detail", "main")}))
         if account["platform"].lower() == "flickr":
             gaps.add(2, "social-flickr", "SocialMediaAccount::PLATFORMS has no Flickr")
     gaps.add(2, "social-icon", "SocialMediaAccount has no icon field; the icon follows the platform", len(socials))

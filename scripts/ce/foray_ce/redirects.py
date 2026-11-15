@@ -104,8 +104,17 @@ def key(path):
 
 def records(entries):
     """Protocol record dicts for records/redirects.yml. The key is a stable hash; the CE Redirect type matches on the
-    from_path attribute because a URL path is not a valid packet key. Exact paths only."""
-    return [{"key": key(e["from"]),
-             "attributes": {"from_path": e["from"], "to_path": e["to"], "status": e["status"], "active": True,
-                            "source": "seed", "note": f"{e['kind']}: {e['source']}"}}
-            for e in entries if not e["from"].endswith("/*")]
+    from_path attribute because a URL path is not a valid packet key. Exact paths only. A deliberate 404 is carried as
+    410 (gone) with no target; from_path is unique case-insensitively, so later duplicates (after URL-decoding) are dropped."""
+    out, seen = [], set()
+    for e in entries:
+        norm = unquote(e["from"]).lower().rstrip("/") or "/"
+        if e["from"].endswith("/*") or norm in seen:
+            continue
+        seen.add(norm)
+        gone = e["status"] == 404
+        out.append({"key": key(e["from"]),
+                    "attributes": {"from_path": e["from"], "to_path": None if gone else e["to"],
+                                   "status": 410 if gone else e["status"], "active": True,
+                                   "source": "seed", "note": f"{e['kind']}: {e['source']}"}})
+    return out

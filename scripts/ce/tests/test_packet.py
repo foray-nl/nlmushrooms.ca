@@ -96,6 +96,13 @@ def test_keys_follow_the_spec_pattern_and_records_hold_only_spec_fields(built):
             assert set(rec) <= allowed
 
 
+def test_only_types_with_a_position_column_carry_a_position(built):
+    # CE registry: only page_block and navigation_item declare `position`; the planner rejects it elsewhere.
+    for _t, (kind, recs) in built[2].items():
+        if kind not in ("page_block", "navigation_item"):
+            assert all("position" not in rec for rec in recs), kind
+
+
 def test_extract_body_nested_divs_and_home():
     html = '<main><div class="page-body"><div><p>a</p></div><p>b</p></div></main>'
     assert packet.extract_body(html) == "<div><p>a</p></div><p>b</p>"
