@@ -20,6 +20,21 @@ Bundler.require(*Rails.groups)
 
 module CeApp
   class Application < Rails::Application
+    # BetterTogether install: encryption
+    # Engine models use Active Record encryption. Generate keys with `bin/rails db:encryption:init`
+    # and set all three variables (or use encrypted credentials instead). A partial set raises.
+    if ENV['ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY'].present?
+      config.active_record.encryption.primary_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY')
+      config.active_record.encryption.deterministic_key = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY')
+      config.active_record.encryption.key_derivation_salt = ENV.fetch('ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT')
+    end
+
+    # BetterTogether install: generators
+    config.generators do |g|
+      g.orm :active_record, primary_key_type: :uuid
+      g.test_framework :rspec, fixture: false if Gem.loaded_specs.key?('rspec-rails')
+      g.fixture_replacement :factory_bot, dir: 'spec/factories' if Gem.loaded_specs.key?('factory_bot_rails')
+    end
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.1
 
