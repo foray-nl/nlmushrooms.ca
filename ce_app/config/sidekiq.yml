@@ -1,0 +1,36 @@
+# Redis is dedicated to this app, so queue names are not prefixed.
+# Keep the list in step with the queues the engine enqueues on.
+default: &default
+  url: <%= ENV['REDIS_URL'] || 'redis://localhost:6379' %>
+
+development:
+  <<: *default
+  queues: &queues
+    - [default, 1]
+    - [mailers, 2]
+    - [geocoding, 3]
+    - [maintenance, 3]
+    - [metrics, 3]
+    - [notifications, 3]
+    - [platform_sync, 3]
+    - [low_priority, 3]
+    - [webhooks, 3]
+    - [weather, 3]
+
+test:
+  <<: *default
+  queues: *queues
+
+production:
+  <<: *default
+  queues:
+    - [default, 1]
+    - [mailers, 2]
+    - [geocoding, 3]
+    - [maintenance, 3]
+    - [metrics, 3]
+    - [notifications, 3]
+    - [platform_sync, 3]
+    - [low_priority, 3]
+    - [webhooks, 3]
+    - [weather, 3]

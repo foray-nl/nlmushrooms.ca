@@ -1,0 +1,57 @@
+# Local development and test harness. Nothing here is used in production.
+name: nlmce
+
+services:
+  db:
+    image: imresamu/postgis:17-3.5-bookworm
+    environment:
+      POSTGRES_USER: rails
+      POSTGRES_PASSWORD: password
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U rails']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    mem_limit: 1g
+
+  redis:
+    image: redis:7-alpine
+    mem_limit: 256m
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    user: '${DC_UID:-1000}:${DC_GID:-1000}'
+    environment:
+      HOME: /tmp/home
+      RAILS_ENV: ${RAILS_ENV:-development}
+      DB_HOST: db
+      DB_USERNAME: rails
+      DB_PASSWORD: password
+      REDIS_URL: redis://redis:6379/0
+      TMPDIR: /tmp
+      ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY:
+      ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY:
+      ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT:
+      BETTER_TOGETHER_SEED_PACKET_ROOTS: /packet
+    volumes:
+      - .:/app
+      - bundle:/bundle
+      # Mounted read-only for the seed packet checks; see bin/dc-seed-plan.
+      - ${SEED_PACKET_DIR:-./tmp/packet}:/packet:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - '127.0.0.1:3010:3000'
+    mem_limit: 3g
+
+volumes:
+  dbdata:
+  bundle:
