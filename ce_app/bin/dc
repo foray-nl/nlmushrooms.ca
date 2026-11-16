@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Thin docker compose wrapper: bin/dc up -d db redis, bin/dc build app, ...
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+export DC_UID="${DC_UID:-$(id -u)}" DC_GID="${DC_GID:-$(id -g)}"
+mkdir -p tmp/packet
+exec docker compose -f docker-compose.yml "$@"

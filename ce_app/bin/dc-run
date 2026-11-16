@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Run a command in the app container: bin/dc-run bundle exec rspec
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+bin/dc up -d db redis >/dev/null
+exec bin/dc run --rm --no-deps app "$@"

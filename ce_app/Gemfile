@@ -1,47 +1,61 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-# Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.1.4", ">= 8.1.4.1"
-# Use postgresql as the database for Active Record
-gem "pg", "~> 1.1"
-# Use the Puma web server [https://github.com/puma/puma]
-gem "puma", ">= 5.0"
-# Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
-gem "importmap-rails"
-# Hotwire's SPA-like page accelerator [https://turbo.hotwired.dev]
-gem "turbo-rails"
-# Hotwire's modest JavaScript framework [https://stimulus.hotwired.dev]
-gem "stimulus-rails"
-# Use Redis adapter to run Action Cable in production
-# gem "redis", ">= 4.0.1"
+source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
-# gem "bcrypt", "~> 3.1.7"
+ruby '3.4.12'
 
-# Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem "tzinfo-data", platforms: %i[ windows jruby ]
+# Community Engine, pinned to a reviewed commit on github/main (never branch: 'main').
+# 1c26c4678 contains the trusted domains, seed packet, storage routing and installer fixes
+# listed in docs/runbooks/ce-static-site-migration-dedicated-host.md section 2.
+gem 'better_together', '~> 0.11.0',
+    github: 'better-together-org/community-engine-rails',
+    ref: '1c26c4678de17d95936efea0fed424c7e69d99e1'
 
-# Reduces boot times through caching; required in config/boot.rb
-gem "bootsnap", require: false
+# Forks the engine needs; they are not on rubygems.
+gem 'pundit-resources', '~> 1.1.4', github: 'better-together-org/pundit-resources'
+gem 'storext', github: 'better-together-org/storext'
 
-# Add HTTP asset caching/compression and X-Sendfile acceleration to Puma [https://github.com/basecamp/thruster/]
-gem "thruster", require: false
+gem 'rails', '~> 8.1.4'
 
-# Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
-gem "image_processing", "~> 1.2"
+gem 'aws-sdk-s3', require: false
+gem 'bcrypt', '~> 3.1.22'
+gem 'bootsnap', '>= 1.7.0', require: false
+gem 'connection_pool', '~> 3.0.2'
+gem 'importmap-rails'
+gem 'pg', '>= 0.18', '< 2.0'
+gem 'puma', '~> 8.0'
+gem 'rack-protection'
+gem 'redis', '~> 6.0'
+gem 'sidekiq', '~> 8.1.1'
+gem 'stimulus-rails'
+gem 'turbo-rails'
+gem 'tzinfo-data', platforms: %i[windows jruby]
 
+# Error reporting (Sentry protocol; Bugsink compatible). No-op without SENTRY_DSN.
+gem 'sentry-rails'
+gem 'sentry-ruby'
+gem 'sentry-sidekiq'
+
+# Audit and lint tools sit in this group, which CI installs; the production image skips it.
 group :development, :test do
-  # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
-
-  # Audits gems for known security defects (use config/bundler-audit.yml to ignore issues)
-  gem "bundler-audit", require: false
-
-  # Static analysis for security vulnerabilities [https://brakemanscanner.org/]
-  gem "brakeman", require: false
+  gem 'brakeman', require: false
+  gem 'bundler-audit', require: false
+  gem 'debug', platforms: %i[mri windows], require: 'debug/prelude'
+  gem 'factory_bot_rails'
+  gem 'i18n-tasks', '~> 1.1.2'
+  gem 'rspec-rails'
+  gem 'rubocop', require: false
+  gem 'rubocop-factory_bot', require: false
+  gem 'rubocop-rails', require: false
+  gem 'rubocop-rspec', require: false
+  gem 'rubocop-rspec_rails', require: false
 end
 
 group :development do
-  # Use console on exceptions pages [https://github.com/rails/web-console]
-  gem "web-console"
+  gem 'web-console'
+end
+
+group :test do
+  gem 'capybara'
 end

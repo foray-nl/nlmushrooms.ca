@@ -1,0 +1,12 @@
+# Development and test image. Production uses ./Dockerfile.
+FROM ruby:3.4.12
+
+RUN apt-get update -qq \
+  && apt-get install -y --no-install-recommends build-essential git libpq-dev libvips42 libyaml-dev \
+    postgresql-client libssl-dev pkg-config chromium chromium-driver \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /bundle /tmp/home && chmod 1777 /bundle /tmp/home
+
+ENV BUNDLE_PATH=/bundle BUNDLE_APP_CONFIG=/bundle BUNDLE_JOBS=4
+WORKDIR /app
