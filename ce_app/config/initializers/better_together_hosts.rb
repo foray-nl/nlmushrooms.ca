@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
-# Allowed hosts for production. Set APP_HOSTS to a comma separated list.
-# The engine already applies its Content Security Policy to host apps; extend it with
-# BetterTogether.register_content_security_policy_sources(:img_src, 'https://cdn.example.org').
+# Optional host allow-list. Platform domains are managed in the database, so leave APP_HOSTS
+# unset unless the hostnames are fixed; the engine resolves the platform from the Host header
+# and refuses unknown hosts itself. Health paths must never be blocked by host authorization.
 Rails.application.config.hosts.concat(ENV.fetch('APP_HOSTS', '').split(',').map(&:strip).compact_blank)
+Rails.application.config.host_authorization = {
+  exclude: ->(request) { %w[/up /healthcheck].include?(request.path) }
+}

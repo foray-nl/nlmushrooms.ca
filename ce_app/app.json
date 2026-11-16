@@ -1,0 +1,48 @@
+{
+  "name": "nlmushrooms-ce",
+  "env": {
+    "LANG": { "description": "Locale", "value": "en_US.UTF-8", "required": true },
+    "RAILS_ENV": { "description": "Rails environment", "value": "production", "required": true },
+    "RAILS_LOG_TO_STDOUT": { "description": "Log to stdout", "value": "true", "required": true },
+    "RAILS_SERVE_STATIC_FILES": { "description": "Serve precompiled assets from the app", "value": "true", "required": true },
+    "SECRET_KEY_BASE": { "description": "Rails secret key base", "required": true },
+    "DATABASE_URL": { "description": "Set by dokku postgres:link", "required": true },
+    "REDIS_URL": { "description": "Set by dokku redis:link", "required": true },
+    "BASE_URL": { "description": "Public base URL, for example https://ce.nlmushrooms.ca", "required": true },
+    "ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY": { "description": "From bin/rails db:encryption:init", "required": true },
+    "ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY": { "description": "From bin/rails db:encryption:init", "required": true },
+    "ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT": { "description": "From bin/rails db:encryption:init", "required": true },
+    "ACTIVE_STORAGE_SERVICE": { "description": "s3_compatible for Garage", "value": "s3_compatible", "required": false },
+    "ACTIVE_STORAGE_ROUTE": { "description": "proxy keeps Garage private", "value": "proxy", "required": false },
+    "AWS_REQUEST_CHECKSUM_CALCULATION": { "description": "Garage compatibility", "value": "when_required", "required": false },
+    "AWS_RESPONSE_CHECKSUM_VALIDATION": { "description": "Garage compatibility", "value": "when_required", "required": false },
+    "S3_REGION": { "description": "Garage region", "value": "garage", "required": false },
+    "S3_ENDPOINT": { "description": "Garage S3 endpoint", "required": false },
+    "S3_BUCKET_NAME": { "description": "uploads-nlmushrooms", "required": false },
+    "PUMA_WORKERS": { "description": "Puma worker processes", "value": "1", "required": false },
+    "SENTRY_DSN": { "description": "Error reporting DSN", "required": false },
+    "RACK_ATTACK_REDIS_URL": { "description": "Redis URL for throttle counters", "required": false },
+    "RACK_ATTACK_SAFELIST_NETWORKS": { "description": "CIDRs of the load balancer and monitors", "required": false },
+    "SMTP_ADDRESS": { "description": "SMTP server", "required": false },
+    "SMTP_PORT": { "description": "SMTP port", "value": "587", "required": false },
+    "SMTP_USERNAME": { "description": "SMTP user", "required": false },
+    "SMTP_PASSWORD": { "description": "SMTP password", "required": false }
+  },
+  "formation": {
+    "web": { "quantity": 1 },
+    "worker": { "quantity": 1 }
+  },
+  "healthchecks": {
+    "web": [
+      {
+        "type": "startup",
+        "name": "web check",
+        "description": "Checking that the app answers",
+        "path": "/healthcheck",
+        "attempts": 5,
+        "wait": 5,
+        "timeout": 5
+      }
+    ]
+  }
+}
