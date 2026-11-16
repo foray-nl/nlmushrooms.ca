@@ -31,6 +31,17 @@ Everything runs in the compose stack (PostGIS, Redis). Nothing here touches a se
 4. Hand edits listed in the hardening commit: `app/assets/images` and `app/javascript` placeholders (the installer's manifest links need them), health route, production config, Sidekiq, Sentry, Dockerfile, CI.
 5. `bin/rails g rspec:install`, then `bin/rails db:create db:migrate` (398 gem migrations, `db/schema.rb` generated, no `db/migrate` directory).
 
+## Seed packet check (runbook section 3 step 5)
+
+```bash
+python3 scripts/ce/seed_packet.py --out tmp/ce/nlm-site --blobs hardlink
+SEED_PACKET_DIR=$PWD/tmp/ce ce_app/bin/dc-run bash -c \
+  'PACKET=/packet/nlm-site PLATFORM=<scratch platform identifier> bin/rails better_together:seeds:plan'
+```
+
+At gem `1c26c4678` the plan reports errors, not zero: the gem's seed registry does not yet model the fields the
+generator emits (see the PR description for counts). Nothing is planted until this reaches zero.
+
 ## Rules
 
 - Never run `better_together:install:migrations`. `bin/check-engine-migrations` and the specs fail if a

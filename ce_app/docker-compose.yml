@@ -34,6 +34,10 @@ services:
       DB_PASSWORD: password
       REDIS_URL: redis://redis:6379/0
       TMPDIR: /tmp
+      ACTIVE_RECORD_ENCRYPTION_PRIMARY_KEY:
+      ACTIVE_RECORD_ENCRYPTION_DETERMINISTIC_KEY:
+      ACTIVE_RECORD_ENCRYPTION_KEY_DERIVATION_SALT:
+      BETTER_TOGETHER_SEED_PACKET_ROOTS: /packet
     volumes:
       - .:/app
       - bundle:/bundle
