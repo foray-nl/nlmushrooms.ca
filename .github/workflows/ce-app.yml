@@ -1,0 +1,94 @@
+name: CE host app
+
+# The Rails host app lives in ce_app/. The static site on main is unaffected by this workflow.
+on:
+  push:
+    paths: ['ce_app/**', '.github/workflows/ce-app.yml']
+  pull_request:
+    paths: ['ce_app/**', '.github/workflows/ce-app.yml']
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: ce_app
+
+jobs:
+  rspec:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: imresamu/postgis:17-3.5-bookworm
+        ports: ['5432:5432']
+        env:
+          POSTGRES_USER: rails
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd "pg_isready -U rails" --health-interval 10s --health-timeout 5s --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
+    env:
+      RAILS_ENV: test
+      DB_HOST: localhost
+      DB_USERNAME: rails
+      DB_PASSWORD: password
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: ce_app
+      - name: Install libvips
+        run: sudo apt-get update && sudo apt-get install -y -o Acquire::Retries=3 libvips42
+      - name: Prepare the database from the gem migrations
+        run: bundle exec rails db:create db:migrate
+      - name: Fail if engine migrations were copied into db/migrate
+        run: bin/check-engine-migrations
+      - name: Fail if db/schema.rb is stale
+        run: git diff --exit-code -- db/schema.rb
+      - run: bundle exec rspec
+
+  rubocop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: ce_app
+      - run: bundle exec rubocop --parallel
+
+  i18n:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: ce_app
+      # i18n-tasks health exits 78 when no keys exist; run its checks individually instead.
+      - run: bundle exec i18n-tasks missing && bundle exec i18n-tasks unused && bundle exec i18n-tasks check-normalized
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+          working-directory: ce_app
+      - run: bundle exec bundler-audit check --update
+      - run: bundle exec brakeman -q -w2 --no-pager
+
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build the production image from ce_app (the Dokku build-dir)
+        run: docker build -t nlmushrooms-ce:ci .
