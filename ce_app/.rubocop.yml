@@ -1,0 +1,37 @@
+plugins:
+  - rubocop-rails
+  - rubocop-rspec
+  - rubocop-factory_bot
+  - rubocop-rspec_rails
+
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.4
+  Exclude:
+    - 'bin/*'
+    - 'db/schema.rb'
+    - 'db/migrate/*.better_together.rb'
+    - 'node_modules/**/*'
+    - 'vendor/**/*'
+    - 'tmp/**/*'
+
+Style/Documentation:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*'
+    - 'config/environments/*'
+    - 'config/routes.rb'
+
+Rails/Output:
+  Exclude:
+    - 'db/seeds.rb'
+
+RSpec/MultipleExpectations:
+  Max: 3
+
+RSpec/DescribeClass:
+  Exclude:
+    - 'spec/config/**/*'

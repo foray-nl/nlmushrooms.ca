@@ -1,0 +1,12 @@
+.git
+.env*
+log/*
+tmp/*
+storage/*
+node_modules
+spec
+test
+coverage
+config/master.key
+config/credentials/*.key
+vendor/bundle

@@ -1,0 +1,26 @@
+base_locale: en
+
+locales:
+  - en
+  - fr
+
+data:
+  read:
+    - config/locales/%{locale}.yml
+    - config/locales/**/%{locale}.yml
+  write:
+    - config/locales/%{locale}.yml
+
+search:
+  paths:
+    - app
+    - config
+    - lib
+  exclude:
+    - 'spec/**'
+    - 'tmp/**'
+
+# Keys come from the Better Together engine locale files.
+ignore_missing:
+  - 'better_together.*'
+  - 'globals.*'
