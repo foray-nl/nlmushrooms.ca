@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Writes the old-URL to clean-CE-path redirect map.
 
-    python3 scripts/ce/redirect_map.py --dry-run
-    python3 scripts/ce/redirect_map.py --out tmp/ce/redirects.yml --format yml|json|csv
+    python3 scripts/ce/redirect_map.py --site-root <site checkout> --dry-run
+    python3 scripts/ce/redirect_map.py --site-root <site checkout> --out tmp/ce/redirects.yml --format yml|json|csv
 
 Nothing is written without --out. --no-hash skips checksumming the PDFs (the map does not need them).
 """
@@ -32,9 +32,9 @@ def render(entries, fmt):
 
 
 def main(argv=None):
-    root_default = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--root", default=root_default)
+    parser.add_argument("--site-root", "--root", dest="root", required=True, metavar="DIR",
+                        help="checkout of the static site (origin/main or upgrade/ce-shared) with layout/, netlify.toml and the files")
     parser.add_argument("--out")
     parser.add_argument("--format", choices=["yml", "json", "csv"], default="yml")
     parser.add_argument("--locale-prefix", default="en", help="locale segment of the CE paths; empty for none")

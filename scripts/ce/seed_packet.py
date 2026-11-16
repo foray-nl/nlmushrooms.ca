@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """Builds the foray seed packet (protocol 2.0, CE seed_packet_protocol.md) from layout/*.yml and the site files.
 
-    python3 scripts/ce/seed_packet.py --dry-run                 plan only: counts, sizes, gaps, nothing written
-    python3 scripts/ce/seed_packet.py --out tmp/ce/foray-nl-site [--blobs hardlink|symlink|copy|none]
+    python3 scripts/ce/seed_packet.py --site-root <site checkout> --dry-run     plan only, nothing written
+    python3 scripts/ce/seed_packet.py --site-root <site checkout> --out tmp/ce/nlm-site [--blobs hardlink|symlink|copy|none]
+
+--site-root is a checkout of the static site (origin/main or upgrade/ce-shared) with `git lfs pull` done. This
+branch holds the Rails app only, so site files, layout/*.yml and netlify.toml are read from that checkout.
 
 Blobs are hard links (copy fallback) to the files already in the tree, so the 638 MB of PDFs are never duplicated.
-The output must live under tmp/ (gitignored) or outside the repository. Exit 3 when files are still LFS pointers.
+The output must live under tmp/ of the site root or outside it. Exit 3 when files are still LFS pointers.
 """
 import argparse
 import json
@@ -24,9 +27,9 @@ def check_out(root, out):
 
 
 def main(argv=None):
-    root_default = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--root", default=root_default)
+    parser.add_argument("--site-root", "--root", dest="root", required=True, metavar="DIR",
+                        help="checkout of the static site (origin/main or upgrade/ce-shared) with layout/, netlify.toml and the files")
     parser.add_argument("--out")
     parser.add_argument("--blobs", choices=["hardlink", "symlink", "copy", "none"], default="hardlink")
     parser.add_argument("--locale-prefix", default="en")

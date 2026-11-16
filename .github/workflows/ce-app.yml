@@ -1,18 +1,12 @@
 name: CE host app
 
-# The Rails host app lives in ce_app/. The static site on main is unaffected by this workflow.
+# The Rails host app lives at the repository root. The static site stays on main.
 on:
   push:
-    paths: ['ce_app/**', '.github/workflows/ce-app.yml']
   pull_request:
-    paths: ['ce_app/**', '.github/workflows/ce-app.yml']
 
 permissions:
   contents: read
-
-defaults:
-  run:
-    working-directory: ce_app
 
 jobs:
   rspec:
@@ -43,7 +37,6 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-          working-directory: ce_app
       - name: Install libvips
         run: sudo apt-get update && sudo apt-get install -y -o Acquire::Retries=3 libvips42
       - name: Prepare the database from the gem migrations
@@ -61,7 +54,6 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-          working-directory: ce_app
       - run: bundle exec rubocop --parallel
 
   i18n:
@@ -71,7 +63,6 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-          working-directory: ce_app
       # i18n-tasks health exits 78 when no keys exist; run its checks individually instead.
       - run: bundle exec i18n-tasks missing && bundle exec i18n-tasks unused && bundle exec i18n-tasks check-normalized
 
@@ -82,7 +73,6 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           bundler-cache: true
-          working-directory: ce_app
       - run: bundle exec bundler-audit check --update
       - run: bundle exec brakeman -q -w2 --no-pager
 
@@ -90,5 +80,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Build the production image from ce_app (the Dokku build-dir)
+      - name: Build the production image from the repository root
         run: docker build -t nlmushrooms-ce:ci .

@@ -1,0 +1,24 @@
+# PostGIS is required by the engine. Production reads DATABASE_URL (Dokku sets it when
+# the Postgres service is linked); development and test connect by parts so the parallel
+# test worker number can be appended to the database name.
+default: &default
+  adapter: postgis
+  encoding: unicode
+  max_connections: <%= ENV.fetch('RAILS_MAX_THREADS', 5) %>
+  host: <%= ENV.fetch('DB_HOST', 'localhost') %>
+  username: <%= ENV.fetch('DB_USERNAME', 'rails') %>
+  password: <%= ENV.fetch('DB_PASSWORD', 'password') %>
+
+development:
+  <<: *default
+  database: nlmushrooms_ce_development
+
+test:
+  <<: *default
+  database: nlmushrooms_ce_test<%= ENV['TEST_ENV_NUMBER'] %>
+
+production:
+  adapter: postgis
+  encoding: unicode
+  max_connections: <%= ENV.fetch('RAILS_MAX_THREADS', 5) %>
+  url: <%= ENV['DATABASE_URL'] %>

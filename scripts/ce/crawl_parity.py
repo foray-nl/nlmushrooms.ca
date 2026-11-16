@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Compares every old foray URL with the same URL on the new Community Engine site (read-only, bounded).
 
-    python3 scripts/ce/crawl_parity.py --new https://ce.nlmushrooms.ca --dry-run
-    python3 scripts/ce/crawl_parity.py --new https://ce.nlmushrooms.ca --old https://nlmushrooms.ca --out tmp/ce/parity.json
+    python3 scripts/ce/crawl_parity.py --site-root <site checkout> --new https://ce.nlmushrooms.ca --dry-run
+    python3 scripts/ce/crawl_parity.py --site-root <site checkout> --new https://ce.nlmushrooms.ca --old https://nlmushrooms.ca --out tmp/ce/parity.json
 
 For each redirect-map entry it expects the status and one-hop Location, a 200 at the destination, matching
 title, description, JSON-LD types, headings, link and alt counts for pages (against the old site), and with
---pdf-checksums the sha256 of each document against the file in this tree. Only GET requests; --delay spaces them.
+--pdf-checksums the sha256 of each document against the file in the site checkout. Only GET requests; --delay spaces them.
 Exit 1 when any entry has a problem.
 """
 import argparse
@@ -20,9 +20,9 @@ from foray_ce import inventory, parity, redirects, site  # noqa: E402
 
 
 def main(argv=None, fetcher=None):
-    root_default = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--root", default=root_default)
+    parser.add_argument("--site-root", "--root", dest="root", required=True, metavar="DIR",
+                        help="checkout of the static site (origin/main or upgrade/ce-shared) with layout/, netlify.toml and the files")
     parser.add_argument("--new", required=True, help="base URL of the new site, e.g. https://ce.nlmushrooms.ca")
     parser.add_argument("--old", help="base URL of the old site; omit to skip page comparison")
     parser.add_argument("--locale-prefix", default="en")

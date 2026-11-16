@@ -1,106 +1,56 @@
-# nlmushrooms.ca
+# Community Engine host app for nlmushrooms.ca
 
-Static website for the Newfoundland and Labrador Mycological Society.
+Fresh Rails 8.1 app running the Community Engine gem (`better_together`), the dedicated host app of Scenario A in
+`docs/runbooks/ce-static-site-migration-dedicated-host.md` (management-tool). Target: `ce.nlmushrooms.ca`.
 
-## Repository Layout
-- `index.html` and other `*.html` files: static pages for the site.
-- `images/`, `articles/`, `foray_reports/`, `species_lists/`, `science/`: content directories referenced by the pages.
-- `sitemap.rb`: script to generate `sitemap.xml` (HTML pages and PDFs, canonical URLs).
-- `spec/`: RSpec tests for basic navigation and membership pages.
+## Layout
 
-## Serving Locally
-Use Ruby's built‑in web server to view the site:
+This branch is the Rails app only, at the repository root. The static site lives on `main` (Netlify) and
+`upgrade/ce-shared`, and is not on this branch. Dokku builds the root `Dockerfile`; no `build-dir` setting is needed
+(Dokku 0.38.34 pinned in `bin/prod/host-setup.versions`). `scripts/ce/` holds the migration tooling (seed packet
+generator, redirect map, crawl parity); it reads a checkout of the static site given with `--site-root`.
 
-```bash
-ruby -run -e httpd . -p 8000
-```
-
-Then open <http://localhost:8000/> in a browser.
-
-## Sitemap Generation
-Regenerate `sitemap.xml` after making changes to the site:
+## Local harness
 
 ```bash
-ruby sitemap.rb
+bin/dc build app
+bin/dc-run bundle install
+bin/dc-run bin/rails db:create db:migrate
+bin/dc-run bundle exec rspec          # RAILS_ENV=test
+bin/dc-run bundle exec rubocop --parallel
 ```
 
-## Running Tests
-Install dependencies and run the RSpec suite:
+Everything runs in the compose stack (PostGIS, Redis). Nothing here touches a server.
+
+## Build log (each step is one commit)
+
+1. `rails new nlmushrooms.ca -d postgresql -A -T --skip-kamal --skip-solid --skip-jbuilder --skip-git --skip-docker --skip-rubocop --skip-ci --skip-bundle` (Rails 8.1.4.1, Ruby 3.4.12, image `ce-fresh-rails:8.1`).
+2. Gem pinned by `ref:` to community-engine-rails `1c26c4678de17d95936efea0fed424c7e69d99e1`, forks `pundit-resources` and `storext`, lockfile platforms `x86_64-linux` and `aarch64-linux`.
+3. `mkdir -p app/assets/config && touch app/assets/config/manifest.js`, then `bin/rails g better_together:install` (defaults, gem migrations).
+4. Hand edits listed in the hardening commit: `app/assets/images` and `app/javascript` placeholders (the installer's manifest links need them), health route, production config, Sidekiq, Sentry, Dockerfile, CI.
+5. `bin/rails g rspec:install`, then `bin/rails db:create db:migrate` (398 gem migrations, `db/schema.rb` generated, no `db/migrate` directory).
+
+## Seed packet check (runbook section 3 step 5)
 
 ```bash
-bundle install
-bundle exec rspec
+python3 scripts/ce/seed_packet.py --site-root <site checkout> --out tmp/ce/nlm-site --blobs hardlink
+# (site checkout = a worktree of origin/main with git lfs pull done)
+SEED_PACKET_DIR=$PWD/tmp/ce bin/dc-run bash -c \
+  'PACKET=/packet/nlm-site PLATFORM=<scratch platform identifier> bin/rails better_together:seeds:plan'
 ```
 
-## Before/after screenshots and accessibility (axe-core)
-`spec/visual/pages_spec.rb` captures every HTML page (desktop 1440 px and mobile 430 px with viewport emulation, full page) and runs axe-core. It needs Chrome (Selenium Manager fetches it) and is opt-in:
+`redirect_map.py` and `crawl_parity.py` take the same `--site-root`.
 
-```bash
-git worktree add --detach tmp/baseline $(grep commit spec/baseline.yml | cut -d' ' -f2)   # once; add GIT_LFS_SKIP_SMUDGE=1 to skip PDFs
-RUN_VISUAL=1 SITE_ROOT=tmp/baseline CAPTURE_LABEL=before bundle exec rspec spec/visual/pages_spec.rb
-RUN_VISUAL=1 bundle exec rspec spec/visual/pages_spec.rb      # after, from the working tree
-ruby scripts/compare_visual.rb   # tmp/visual/compare/index.html and tmp/visual/axe-summary.md
-```
-Output lives in `tmp/` (gitignored). Google Analytics and web fonts are blocked during capture so runs are repeatable.
+At gem `1c26c4678` the plan reports errors, not zero: the gem's seed registry does not yet model the fields the
+generator emits (see the PR description for counts). Nothing is planted until this reaches zero.
 
-## Missing files manifest
-`manifests/missing-files.yml` lists files that pages reference but the repository does not contain (to be located and uploaded, or decided on link by link). `spec/missing_files_spec.rb` fails when a page references a missing path that is not listed, or when an entry's status is out of date. `ruby scripts/missing_files_report.rb` prints what still needs to be located. PDFs go in through Git LFS.
+## Rules
 
-## Contributing
-1. Fork the repository and create a feature branch.
-2. Make your changes and update `sitemap.xml` using `ruby sitemap.rb`.
-3. Run `bundle exec rspec` to ensure tests pass.
-4. Submit a pull request describing your changes.
-
-## Deployment
-1. Regenerate the sitemap and run the tests.
-2. Commit and push to the `main` branch.
-3. Copy the repository contents to the production web server (e.g., with `rsync` or `scp`).
-
-## Shared layout (header, nav, footer)
-
-The shared regions live in `layout/partials/` (`head`, `header`, `nav`, `footer`). A page opts in by wrapping a
-region in marker comments:
-
-```html
-<!-- layout:nav -->
-<!-- /layout:nav -->
-```
-
-`ruby scripts/apply_layout.rb` fills every marked region from the partial (the nav link for the page itself gets
-`class="active"`). `ruby scripts/apply_layout.rb --check` exits 1 if any page is out of date; `bundle exec rspec`
-runs the same check, so CI fails on drift. Edit the partial, never the marked region in a page. Pages stay plain
-static HTML, so Netlify serves them unchanged. Currently `foray_2025.html` and `foray_2026.html` use it; the legacy
-pages adopt it as they are converted.
-
-### Nav and Bootstrap
-
-The nav partial uses the same Bootstrap 5 markup as the Community Engine gem (`navbar navbar-expand-lg navbar-dark`,
-a `navbar-toggler`, and a `collapse navbar-collapse` list), so it collapses behind a toggler below 992 px and the
-partial can move into a CE host app unchanged. Only the navbar, nav-link and collapse rules are vendored (full
-Bootstrap would restyle every page), plus the unmodified JS bundle, all self-hosted in `assets/vendor/bootstrap/`.
-`ruby scripts/vendor_bootstrap_nav.rb [VERSION]` regenerates them; site colours and spacing live in
-`assets/styles/site.css`. `RUN_VISUAL=1 bundle exec rspec spec/visual/nav_spec.rb` checks the toggle and that nothing
-scrolls sideways at 430, 992, 1200 and 1440 px.
-
-### Page registry, titles and metadata
-`layout/site-nav.yml` lists every converted page with its name, parent, description and optional own-title segment. From it `apply_layout.rb` generates, inside `<!-- layout:meta -->`, the `<title>` (`Contact Us | About Us | Foray Newfoundland and Labrador`: the page, each parent nearest first, then the site), the description, the canonical apex URL, Open Graph/Twitter tags and one JSON-LD `@graph` (Organization, WebSite, the page as WebPage/AboutPage/ContactPage via `schema_type`, and its BreadcrumbList), and it generates the visible breadcrumb (`<!-- layout:breadcrumb -->`) and sub-nav from the same entries, so they cannot disagree. A new converted page needs: a registry entry, the `meta` and `breadcrumb` markers, then `ruby scripts/apply_layout.rb`. The layout spec fails a converted page that is missing from the registry, has no description, or has a hand-written title.
-
-### Social icons
-Accounts live in `layout/socials.yml`; `apply_layout.rb` renders them as tooltipped icon links in the header (`{{social-links}}` in the header partial) and as an icon-plus-text list wherever a page has a `<!-- layout:social -->` region (Contacts). Icons are the Font Awesome Free brand glyphs, subset to the three in use (`assets/vendor/fontawesome/`, same `fa-brands fa-<name>` classes as Community Engine). To add a platform: add the glyph to the subset (`pyftsubset fa-brands-400.woff2 --unicodes=U+f09a,U+f16d,U+f16e,<new> --flavor=woff2 --output-file=assets/vendor/fontawesome/fa-brands-subset.woff2`), add its class to `fontawesome-social.css`, then add the account. Tooltips are Bootstrap's, started by `assets/scripts/site.js`; each link also has an `aria-label` ("Platform: handle (opens in a new tab)").
-
-### Cache busting
-`apply_layout.rb` appends `?v=<first 10 hex of the file's SHA-256>` to the local stylesheet and script URLs in the shared head, so a changed file is a new URL. `netlify.toml` caches those paths for a year (`immutable`), revalidates HTML on every load, and sets `no-cache` on unversioned static files. Run `ruby scripts/apply_layout.rb` after editing any CSS or JS; the layout spec fails if a reference is stale. Netlify also sends an ETag on every response.
-
-### Before/after tables in PR bodies
-
-Every PR that changes how a page looks shows the page before and after, desktop and mobile. After capturing
-(see the harness section), `ruby scripts/pr_screenshots.rb stage --name <pr-name> --pages a,b --before <dir>
---after <dir>` copies the PNGs into `docs/screenshots/<pr-name>/` (never served by Netlify), and
-`ruby scripts/pr_screenshots.rb table --name <pr-name> --sha <commit>` prints the markdown table with URLs pinned
-to that commit, so the images survive branch deletion. A `--before` directory already under `docs/screenshots/`
-(for example the committed baseline) is referenced in place.
-
-## Past Forays directory
-
-`layout/forays.yml` lists every foray (year, venue, area, dates, status, report PDF, card art). `scripts/apply_layout.rb` turns it into the card directory on `past_forays.html` (newest first), the report list on `foray_reports_all.html` and Event JSON-LD on any foray with its own `page`. Card images in `images/forays/` are built by `python3 scripts/foray_card_images.py [year ...]` from the `art` source of each entry. `note` fields are for reviewers and are never rendered. `/foray_reports(.html)` redirects (301) to `/past_forays.html`.
+- Never run `better_together:install:migrations`. `bin/check-engine-migrations` and the specs fail if a
+  `db/migrate/*.better_together.rb` file appears.
+- No secrets in the repo. `config/master.key`, credentials keys and `.env*` are ignored; production values come from
+  Dokku config (see `app.json` for the names). The first deploy is `rails db:seed`, run once by a human (T3), then the
+  setup wizard at `/en/w/setup_wizard`.
+- `postdeploy` seeding is deliberately absent from `app.json`.
+- Deploy only through CI green then `git push <dokku-remote> main` with owner confirmation. Do not deploy from this
+  branch.
